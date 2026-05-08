@@ -50,7 +50,7 @@ echo "--- Security ---"
 # CVEs (DoS via Server Components, GHSA-q4gf-8mx6-v5v3 u.a.). Migration auf Next 15
 # in Session 15 (Security & DSGVO) — bis dahin nur kritische Advisories blocken.
 check "npm audit"       "pnpm audit --audit-level=critical"
-check "Keine Secrets"   "matches=\$( { git diff main..HEAD || true; } | { grep -v '^-' || true; } | { grep -vE '(test|spec|mock)' || true; } | { grep -iE '(password|secret|api.?key|token).*=.*[a-zA-Z0-9]{20}' || true; }); test -z \"\$matches\""
+check "Keine Secrets"   "matches=\$( { git diff main..HEAD -- '.' ':!*.test.*' ':!*.spec.*' ':!**/__mocks__/**' ':!**/tests/**' ':!**/test/**' ':!**/.env.example' || true; } | { grep -v '^-' || true; } | { grep -iE '(password|secret|api.?key|token).*=.*[a-zA-Z0-9]{20}' || true; }); test -z \"\$matches\""
 
 echo ""
 echo "--- Build ---"
