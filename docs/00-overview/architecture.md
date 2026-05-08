@@ -70,7 +70,7 @@ nextgen-crm/
 │           ├── main.ts         # Bootstrap, CORS, CSRF, Swagger
 │           ├── app.module.ts   # Root-Module
 │           ├── auth/           # JWT, Guards, Strategies, 2FA
-│           ├── websocket/      # Socket.io Gateway (ab Session 0!)
+│           ├── websocket/      # Socket.io Gateway (Echo ab S0, JWT-Guard ab S2)
 │           ├── pulse/          # M1
 │           ├── leads/          # M2
 │           ├── deals/          # M3
@@ -125,7 +125,11 @@ Browser → Alle API-Calls: Authorization: Bearer {access_token}
         → Refresh: POST /api/auth/refresh (Cookie automatisch mitgeschickt)
 ```
 
-### WebSocket-Flow (Pflicht ab Session 0)
+### WebSocket-Flow
+
+Echo-Gateway läuft ab Session 0 (ohne Auth, nur für Demo-/Smoke-Zwecke).
+**JWT-Pflicht ab Session 2** (Auth-Modul) — danach gilt:
+
 ```
 Browser → Socket.io Handshake: { auth: { token: jwt } }
         ← Connected / Error: 401 Unauthorized
