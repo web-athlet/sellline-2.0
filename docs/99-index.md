@@ -2,14 +2,20 @@
 title: "Gesamt-Index aller Docs"
 tags: [index, navigation, all-docs]
 status: active
-last_updated: 2026-05-07
+last_updated: 2026-05-08
 summary: "Vollstaendiger Index aller Second-Brain-Dokumente."
 ---
 
 # Gesamt-Index — NextGen CRM Second Brain
 
-> Zuletzt aktualisiert: 2026-05-07 von @doc-keeper / update-index.sh
+> Zuletzt aktualisiert: 2026-05-08 von @doc-keeper / update-index.sh
 > Agents: Scanne diesen Index ZUERST um zu entscheiden was zu laden ist.
+
+## Sessions (20-sessions/)
+
+| Datei | Status | Summary |
+|---|---|---|
+| [session-00-summary.md](20-sessions/session-00-summary.md) | completed | Greenfield-Scaffolding: 6 Workspaces (NestJS 10 + Next.js 14), pgvector/Redis/MinIO Docker, WS-Echo end-to-end, CI + Husky + Quality-Gate 10/10 PASS. |
 
 ## Module (10-modules/)
 

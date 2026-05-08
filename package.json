@@ -1,0 +1,53 @@
+{
+  "name": "nextgen-crm",
+  "version": "0.0.0",
+  "private": true,
+  "description": "AI-natives B2B-CRM monorepo (Next.js 14 + NestJS 10 + Postgres/pgvector + Redis + MinIO).",
+  "packageManager": "pnpm@10.18.0",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=10.0.0"
+  },
+  "scripts": {
+    "dev": "turbo run dev --parallel --filter=@nextgen/*",
+    "build": "turbo run build --filter=@nextgen/*",
+    "lint": "turbo run lint --filter=@nextgen/*",
+    "typecheck": "turbo run typecheck --filter=@nextgen/*",
+    "test": "turbo run test --filter=@nextgen/*",
+    "test:unit": "turbo run test --filter=@nextgen/api --filter=@nextgen/web --filter=@nextgen/utils",
+    "test:coverage": "turbo run test:coverage --filter=@nextgen/api --filter=@nextgen/web --filter=@nextgen/utils",
+    "test:integration": "turbo run test --filter=@nextgen/integration-tests",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
+    "prepare": "husky"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@nestjs/core",
+      "@swc/core",
+      "esbuild",
+      "unrs-resolver"
+    ],
+    "overrides": {
+      "glob@>=10.2.0 <10.5.0": "^10.5.0",
+      "multer@<2.1.0": "^2.1.0"
+    }
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.5.0",
+    "@commitlint/config-conventional": "^19.5.0",
+    "@types/node": "^20.16.5",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "@vitest/coverage-v8": "^1.6.1",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^14.2.18",
+    "eslint-config-prettier": "^9.1.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.2.10",
+    "prettier": "^3.3.3",
+    "turbo": "^2.5.0",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.1"
+  }
+}

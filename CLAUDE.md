@@ -1,7 +1,7 @@
 # NextGen CRM — Claude Code Context
 
-> **v4.0** | Stand: _{DATUM}_ | Aktive Session: _{N}_ | Branch: _{BRANCH}_
-> Letztes Update: _{SESSION-CLOSER-TIMESTAMP}_
+> **v4.0** | Stand: 2026-05-08 | Aktive Session: — | Branch: feature/session-0-scaffolding
+> Letztes Update: 2026-05-08 (Session 0 Closer)
 
 ## Mission
 AI-natives B2B-CRM mit 10 Modulen + 3 KI-Agenten. Orientiert an Pipedrive,
@@ -35,7 +35,7 @@ nextgen-crm/
 
 | # | Modul | Status | Branch | AC-Coverage |
 |---|-------|--------|--------|-------------|
-| 0 | Scaffolding + CLAUDE.md + WebSocket-Basis | ⬜ | — | — |
+| 0 | Scaffolding + CLAUDE.md + WebSocket-Basis | ✅ | feature/session-0-scaffolding | 14/14 (Selbstcheck) |
 | 1 | DB-Schema + Prisma + Seed | ⬜ | — | — |
 | 2 | Authentication (JWT, RBAC, 2FA, PW-Reset) | ⬜ | — | — |
 | 3 | Navigation / App-Shell | ⬜ | — | — |
@@ -92,7 +92,11 @@ _Noch nicht implementiert._
 
 ## Bekannte Offene Punkte / BLOCKER
 <!-- @doc-keeper aktualisiert nach jedem Review -->
-_Keine._
+
+1. **[Tech-Debt] JWT-WS-Handshake fehlt** — Inline-TODO im Gateway: `// TODO(session-2): JWT-Handshake-Guard einbauen`. Kein BLOCKER bis Session 2.
+2. **[Tech-Debt] Audit-Threshold auf `critical`** — Next.js 14.2.x CVE (GHSA-q4gf-8mx6-v5v3 DoS via Server Components). Wartet auf Next-15-Migration in Session 15. Threshold danach zurück auf `high`.
+3. **[Tech-Debt] `vitest.workspace.ts` entfernt** — Pro-Package Coverage via Turbo; Quality-Gate-Regex matcht mehrere "All files"-Zeilen.
+4. **[Info] `docs/.obsidian/` in `.gitignore`** — lokaler Editor-State, kein Repo-Inhalt.
 
 ---
 
@@ -106,8 +110,14 @@ _Keine aktive Session._
 
 | Variable | Beschreibung | Seit Session |
 |----------|--------------|--------------|
-| `DATABASE_URL` | PostgreSQL Connection String | 1 |
-| `REDIS_URL` | Redis Connection String | 1 |
+| `DATABASE_URL` | PostgreSQL + pgvector Connection String | 0 |
+| `REDIS_URL` | Redis Connection String | 0 |
+| `MINIO_ENDPOINT` | MinIO S3-kompatibler Endpoint | 0 |
+| `MINIO_ACCESS_KEY` | MinIO Access Key | 0 |
+| `MINIO_SECRET_KEY` | MinIO Secret Key | 0 |
+| `MINIO_BUCKET` | MinIO Bucket-Name | 0 |
+| `NEXT_PUBLIC_API_URL` | Web → API HTTP-Basis-URL | 0 |
+| `NEXT_PUBLIC_WS_URL` | Web → API WebSocket-URL | 0 |
 | `JWT_SECRET` | JWT Signing Secret (≥32 chars) | 2 |
 | `NEXTAUTH_SECRET` | NextAuth Secret | 2 |
 | `NEXTAUTH_URL` | App Base URL | 2 |
