@@ -6,7 +6,7 @@ date: 2026-05-09
 duration: ~halber Tag
 model: claude-opus-4-7
 thinking: ultrathink
-review: pending
+review: done-with-fix
 last_updated: 2026-05-09
 summary: "Vollstaendiges Prisma-5-Schema (19 Models + 7 Enums + pgvector(1536)) in @nextgen/db plus idempotenter Seed (3 User, 1 Pipeline + 6 Stages, 10 Orgs, 20 Persons, 30 Deals, 50 Activities, 5 Products, 3 Projects + 15 Tasks, 1 Template). Initial-Migration deployed, Quality-Gate 11/11 PASS."
 ---
@@ -133,5 +133,6 @@ Keine. (`DATABASE_URL` aus Session 0 wird wiederverwendet.)
 
 ## Review
 
-Datei: docs/30-reviews/session-1-light-review.md _(noch nicht erstellt — `/review-light` oder `/review-deep` in neuer Session ausfuehren; kritische Session per Playbook)_
-Ergebnis: _ausstehend_
+Datei: `docs/30-reviews/session-1-deep-review.md` (Tier-3 Deep-Review, durchgefuehrt 2026-05-09 mit Opus 4.7)
+
+Ergebnis: 4 BLOCKER initial — davon 2 echte (S1 bcrypt 10→12; S4 NODE_ENV-Prod-Seed-Guard) und 2 False Positives (S2 `tokenHash` war bereits implementiert; S3 `revokedAt` war bereits da, nur `replacedByToken` fehlte). Echte Fixes in Branch `fix/session-1-security` plus zusaetzliche Migration `20260509170000_add_refresh_token_replaced_by` (`replacedByToken`-Feld auf `RefreshToken` fuer Token-Rotation-Chain). 13 MAJOR/MINOR-Findings als Tech-Debt offen, geplant in Folge-Sessions (siehe CLAUDE.md Offene Punkte #9).

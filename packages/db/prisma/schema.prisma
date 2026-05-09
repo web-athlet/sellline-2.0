@@ -54,13 +54,17 @@ enum Role {
 }
 
 model RefreshToken {
-  id        String    @id @default(uuid())
-  userId    String
-  tokenHash String
-  family    String
-  expiresAt DateTime
-  revokedAt DateTime?
-  createdAt DateTime  @default(now())
+  id              String    @id @default(uuid())
+  userId          String
+  tokenHash       String
+  family          String
+  expiresAt       DateTime
+  revokedAt       DateTime?
+  // Forward pointer for the rotation chain: when this token is rotated, set
+  // replacedByToken to the new token's id. Detecting reuse of a revoked token
+  // whose replacedByToken is already set indicates an exfiltration replay.
+  replacedByToken String?
+  createdAt       DateTime  @default(now())
 
   user User @relation(fields: [userId], references: [id])
 

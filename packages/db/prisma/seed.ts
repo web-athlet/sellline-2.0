@@ -13,6 +13,13 @@ import { fakerDE as faker } from '@faker-js/faker';
 import bcrypt from 'bcryptjs';
 import { v5 as uuidv5 } from 'uuid';
 
+// Refuse to run against a production database — demo accounts must never land
+// in prod. Override with SEED_ALLOW_PROD=1 only for explicit migration drills.
+if (process.env.NODE_ENV === 'production' && process.env.SEED_ALLOW_PROD !== '1') {
+  console.error('❌ Seed refused: NODE_ENV=production. Set SEED_ALLOW_PROD=1 to override.');
+  process.exit(1);
+}
+
 const prisma = new PrismaClient();
 
 const NS = '7e1b2c3d-4e5f-5a6b-8c7d-9e0f1a2b3c4d';
@@ -70,7 +77,7 @@ function dueDateFor(i: number): Date {
 }
 
 async function seedUsers(): Promise<{ admin: string; manager: string; sales: string }> {
-  const password = await bcrypt.hash('Demo1234!', 10);
+  const password = await bcrypt.hash('Demo1234!', 12);
 
   const users = [
     { id: id('user-admin'), email: 'admin@demo.de', name: 'Anna Admin', role: Role.ADMIN },
