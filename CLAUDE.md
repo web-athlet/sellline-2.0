@@ -1,7 +1,7 @@
 # NextGen CRM — Claude Code Context
 
-> **v4.0** | Stand: 2026-05-08 | Aktive Session: — | Branch: feature/session-0-scaffolding
-> Letztes Update: 2026-05-08 (Session 0 Closer)
+> **v4.0** | Stand: 2026-05-09 | Aktive Session: — | Branch: feature/session-1-db-schema
+> Letztes Update: 2026-05-09 (Session 1 Closer)
 
 ## Mission
 AI-natives B2B-CRM mit 10 Modulen + 3 KI-Agenten. Orientiert an Pipedrive,
@@ -36,7 +36,7 @@ nextgen-crm/
 | # | Modul | Status | Branch | AC-Coverage |
 |---|-------|--------|--------|-------------|
 | 0 | Scaffolding + CLAUDE.md + WebSocket-Basis | ✅ | feature/session-0-scaffolding | 14/14 (Selbstcheck) |
-| 1 | DB-Schema + Prisma + Seed | ⬜ | — | — |
+| 1 | DB-Schema + Prisma + Seed | ✅ | feature/session-1-db-schema | 11/11 |
 | 2 | Authentication (JWT, RBAC, 2FA, PW-Reset) | ⬜ | — | — |
 | 3 | Navigation / App-Shell | ⬜ | — | — |
 | 4 | M8 Kontakte | ⬜ | — | — |
@@ -85,8 +85,22 @@ nextgen-crm/
 ---
 
 ## Implementierte Prisma-Entities (von @doc-keeper gepflegt)
-<!-- Nach Session 1 füllt @doc-keeper diese Liste -->
-_Noch nicht implementiert._
+<!-- Stand: Session 1 — alle 19 Models + 7 Enums via 20260509153907_init deployed. -->
+
+**Identity & Auth:** `User`, `RefreshToken`, `PasswordReset`
+**Pipeline & Deals:** `Pipeline`, `Stage`, `Deal`
+**Contacts:** `Organization`, `Person`
+**Activities:** `Activity`
+**Email:** `Email`
+**Products:** `Product`, `DealProduct`
+**Leads & Forms:** `Lead`, `Form`
+**Campaigns:** `Campaign`, `CampaignContact`
+**Projects:** `Project`, `Task`, `ProjectTemplate`
+**AI & Audit:** `AIInsight`, `AuditLog`
+
+**Enums:** `Role`, `ActivityType`, `Priority`, `DiscountType`, `EnrichmentStatus`, `CampaignStatus`, `ProjectStatus`
+
+**pgvector:** `Organization.enrichmentEmbedding vector(1536)` (Extension v0.8.2 installiert).
 
 ---
 
@@ -97,6 +111,9 @@ _Noch nicht implementiert._
 2. **[Tech-Debt] Audit-Threshold auf `critical`** — Next.js 14.2.x CVE (GHSA-q4gf-8mx6-v5v3 DoS via Server Components). Wartet auf Next-15-Migration in Session 15. Threshold danach zurück auf `high`.
 3. **[Tech-Debt] `vitest.workspace.ts` entfernt** — Pro-Package Coverage via Turbo; Quality-Gate-Regex matcht mehrere "All files"-Zeilen.
 4. **[Info] `docs/.obsidian/` in `.gitignore`** — lokaler Editor-State, kein Repo-Inhalt.
+5. **[Tech-Debt] Bare-FK-Spalten ohne Prisma-Relation** — `Email.userId` und `Task.assigneeId` sind plain `String`/`String?` ohne `@relation` (spec-treu). Kein FK-Constraint auf DB-Ebene. Tightening: `Email.userId` in Session 11 (E-Mail-Sync), `Task.assigneeId` in Session 10 (Projects). Kein BLOCKER.
+6. **[Tech-Debt] `migrate dev` nur interaktiv** — Tool-Harness ohne TTY musste auf `prisma migrate diff --from-empty --to-schema-datamodel ... --script` + `prisma migrate deploy` ausweichen. Lokale Entwickler nutzen weiter `pnpm --filter @nextgen/db prisma:migrate` interaktiv. SQL-Output identisch. Kein BLOCKER.
+7. **[Doc-Lücke] `.env`-Bootstrap fehlt im Onboarding** — `.env` ist gitignored und im Repo nicht vorhanden; muss vor erstem `prisma:migrate` via `cp .env.example .env` erstellt werden. Sollte ins zukünftige `docs/50-runbooks/local-dev-setup.md` aufgenommen werden.
 
 ---
 
