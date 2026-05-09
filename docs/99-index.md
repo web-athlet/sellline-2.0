@@ -2,13 +2,13 @@
 title: "Gesamt-Index aller Docs"
 tags: [index, navigation, all-docs]
 status: active
-last_updated: 2026-05-08
+last_updated: 2026-05-09
 summary: "Vollstaendiger Index aller Second-Brain-Dokumente."
 ---
 
 # Gesamt-Index — NextGen CRM Second Brain
 
-> Zuletzt aktualisiert: 2026-05-08 von @doc-keeper / update-index.sh
+> Zuletzt aktualisiert: 2026-05-09 von @doc-keeper / update-index.sh
 > Agents: Scanne diesen Index ZUERST um zu entscheiden was zu laden ist.
 
 ## Sessions (20-sessions/)
@@ -16,6 +16,14 @@ summary: "Vollstaendiger Index aller Second-Brain-Dokumente."
 | Datei | Status | Summary |
 |---|---|---|
 | [session-00-summary.md](20-sessions/session-00-summary.md) | completed | Greenfield-Scaffolding: 6 Workspaces (NestJS 10 + Next.js 14), pgvector/Redis/MinIO Docker, WS-Echo end-to-end, CI + Husky + Quality-Gate 10/10 PASS. |
+| [session-01-summary.md](20-sessions/session-01-summary.md) | completed | Vollstaendiges Prisma-5-Schema (19 Models + 7 Enums + pgvector(1536)) in @nextgen/db plus idempotenter Seed (3 User, 1 Pipeline + 6 Stages, 10 Orgs, 20 Persons, 30 Deals, 50 Activities, 5 Products, 3 Projects + 15 Tasks, 1 Template). Initial-Migration deployed, Quality-Gate 10/10 PASS. |
+
+## Reviews (30-reviews/)
+
+| Datei | Typ | Summary |
+|---|---|---|
+| [session-0-light-review.md](30-reviews/session-0-light-review.md) | Light | Session 0 Light-Review: Scaffolding und WebSocket-Basis — Befunde behoben. |
+| [session-1-deep-review.md](30-reviews/session-1-deep-review.md) | Deep (Tier 3) | Session 1 Deep-Review: 4 BLOCKER initial (2 echt, 2 FP) + 13 weitere Findings. Echte Fixes in `fix/session-1-security`. |
 
 ## Module (10-modules/)
 
