@@ -1,7 +1,7 @@
 # NextGen CRM — Claude Code Context
 
-> **v4.0** | Stand: 2026-05-09 | Aktive Session: — | Branch: feature/session-1-db-schema
-> Letztes Update: 2026-05-09 (Session 1 Closer)
+> **v4.0** | Stand: 2026-05-09 | Aktive Session: Security-Fix-Session-1 | Branch: fix/session-1-security
+> Letztes Update: 2026-05-09 (Session 1 Security-Fix)
 
 ## Mission
 AI-natives B2B-CRM mit 10 Modulen + 3 KI-Agenten. Orientiert an Pipedrive,
@@ -87,7 +87,7 @@ nextgen-crm/
 ## Implementierte Prisma-Entities (von @doc-keeper gepflegt)
 <!-- Stand: Session 1 — alle 19 Models + 7 Enums via 20260509153907_init deployed. -->
 
-**Identity & Auth:** `User`, `RefreshToken`, `PasswordReset`
+**Identity & Auth:** `User`, `RefreshToken` (`replacedByToken` ergaenzt in `fix/session-1-security`), `PasswordReset`
 **Pipeline & Deals:** `Pipeline`, `Stage`, `Deal`
 **Contacts:** `Organization`, `Person`
 **Activities:** `Activity`
@@ -112,14 +112,25 @@ nextgen-crm/
 3. **[Tech-Debt] `vitest.workspace.ts` entfernt** — Pro-Package Coverage via Turbo; Quality-Gate-Regex matcht mehrere "All files"-Zeilen.
 4. **[Info] `docs/.obsidian/` in `.gitignore`** — lokaler Editor-State, kein Repo-Inhalt.
 5. **[Tech-Debt] Bare-FK-Spalten ohne Prisma-Relation** — `Email.userId` und `Task.assigneeId` sind plain `String`/`String?` ohne `@relation` (spec-treu). Kein FK-Constraint auf DB-Ebene. Tightening: `Email.userId` in Session 11 (E-Mail-Sync), `Task.assigneeId` in Session 10 (Projects). Kein BLOCKER.
-6. **[Tech-Debt] `migrate dev` nur interaktiv** — Tool-Harness ohne TTY musste auf `prisma migrate diff --from-empty --to-schema-datamodel ... --script` + `prisma migrate deploy` ausweichen. Lokale Entwickler nutzen weiter `pnpm --filter @nextgen/db prisma:migrate` interaktiv. SQL-Output identisch. Kein BLOCKER.
+6. **[Tech-Debt] `migrate dev` nur interaktiv** — Tool-Harness ohne TTY musste auf `prisma migrate diff --from-empty --to-schema-datamodel ... --script` + `prisma migrate deploy` ausweichen. Lokale Entwickler nutzen weiter `pnpm --filter @nextgen/db prisma:migrate` interaktiv. SQL-Output identisch. Kein BLOCKER. Hinweis: Gleiches Verfahren im Security-Fix-Branch (`fix/session-1-security`) erneut angewendet — `migration_lock.toml` musste manuell erstellt werden, da es im initialen Commit fehlte (`prisma migrate dev` haette es automatisch erzeugt).
 7. **[Doc-Lücke] `.env`-Bootstrap fehlt im Onboarding** — `.env` ist gitignored und im Repo nicht vorhanden; muss vor erstem `prisma:migrate` via `cp .env.example .env` erstellt werden. Sollte ins zukünftige `docs/50-runbooks/local-dev-setup.md` aufgenommen werden.
+8. **[Done] Tier-3 Deep-Review Session 1** — 4 BLOCKER: 2 echte (S1 bcrypt cost 10→12 in `seed.ts:73`; S4 NODE_ENV-Prod-Seed-Guard mit `exit 1`, override via `SEED_ALLOW_PROD=1`), 1 partial-FP (S3 `revokedAt` war da, `replacedByToken String?` fehlte — ergaenzt), 1 FP (S2 `tokenHash` war bereits implementiert). Fix-Branch: `fix/session-1-security`. Migration: `20260509170000_add_refresh_token_replaced_by`. Quality-Gate gruen (typecheck PASS, lint PASS, vitest 3/3 PASS). Review-Dokument: `docs/30-reviews/session-1-deep-review.md`.
+9. **[Tech-Debt] Deep-Review-Session-1-Findings (offen, kein BLOCKER)** — geplant fuer Folge-Sessions:
+   - S5 HMAC-Tracking-Token in `CampaignContact.trackingToken` (Session 12)
+   - P1/P2/P3 Fehlende Indexe auf `Deal`, `Activity`, `Email` (Session 5/7/11)
+   - P6 HNSW-Index fuer `Organization.enrichmentEmbedding` (Session 14)
+   - D1 `AIInsight.deletedAt` + Index (Session 14)
+   - D2 Retention-Felder `retainUntil` (Session 15)
+   - D3 `Person.optOutAt` (Session 12)
+   - D4 `onDelete: Cascade` fuer Kindelemente (Session 5/12)
+   - A1 Singleton-Disconnect-Lifecycle fuer PrismaClient (Session 2 / PrismaService)
+   - T2/T3 Test-Coverage: Seed-Idempotenz + Disconnect-Order (Session 16a)
 
 ---
 
 ## Aktuelle Session-Notizen
 <!-- Wird bei /session-end überschrieben. Enthält In-Progress-Details. -->
-_Keine aktive Session._
+Aktive Session: Security-Fix-Session-1 (4 BLOCKER aus Deep-Review behoben — siehe Offene Punkte #8).
 
 ---
 
@@ -138,6 +149,7 @@ _Keine aktive Session._
 | `JWT_SECRET` | JWT Signing Secret (≥32 chars) | 2 |
 | `NEXTAUTH_SECRET` | NextAuth Secret | 2 |
 | `NEXTAUTH_URL` | App Base URL | 2 |
+| `SEED_ALLOW_PROD` | Prod-Seed-Guard-Override (setze `1` um Seed in production zu erzwingen — sonst exit 1) | 1-fix |
 | _(weitere folgen pro Session)_ | | |
 
 ---
