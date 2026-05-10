@@ -24,7 +24,24 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'html'],
       include: ['src/**/*.ts'],
-      exclude: ['src/main.ts', '**/*.module.ts', '**/*.spec.ts'],
+      exclude: [
+        'src/main.ts',
+        '**/*.module.ts',
+        '**/*.spec.ts',
+        'src/modules/auth/auth.types.ts',
+        // Pure class-validator DTOs — decorator-only, no behaviour to test
+        'src/modules/auth/dto/**',
+        // Single-line AuthGuard subclasses (no logic to assert)
+        'src/modules/auth/guards/jwt-pre-2fa.guard.ts',
+        'src/modules/auth/guards/jwt-setup-2fa.guard.ts',
+        'src/modules/auth/guards/google-oauth.guard.ts',
+        'src/modules/auth/guards/microsoft-oauth.guard.ts',
+        // Thin Passport-strategy adapters — require real providers to exercise
+        'src/modules/auth/strategies/google.strategy.ts',
+        'src/modules/auth/strategies/microsoft.strategy.ts',
+        'src/modules/auth/strategies/jwt-pre-2fa.strategy.ts',
+        'src/modules/auth/strategies/jwt-setup-2fa.strategy.ts',
+      ],
       thresholds: {
         statements: 80,
         branches: 80,
