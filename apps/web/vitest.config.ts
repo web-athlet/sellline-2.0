@@ -15,16 +15,23 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./test/setup.ts'],
-    include: ['hooks/**/*.test.{ts,tsx}', 'lib/**/*.test.{ts,tsx}'],
+    include: [
+      'hooks/**/*.test.{ts,tsx}',
+      'lib/**/*.test.{ts,tsx}',
+      'components/**/*.test.{ts,tsx}',
+      'stores/**/*.test.{ts,tsx}',
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],
-      include: ['lib/**/*.ts', 'hooks/**/*.ts'],
+      include: ['lib/**/*.ts', 'hooks/**/*.ts', 'components/**/*.{ts,tsx}', 'stores/**/*.ts'],
       exclude: [
         '**/*.test.{ts,tsx}',
         'lib/socket.ts',
         // NextAuth config is declarative wiring — exercised end-to-end, not unit-tested
         'lib/auth-options.ts',
+        // Stub pages have no logic to test
+        'app/**/*.tsx',
       ],
       thresholds: {
         statements: 80,
