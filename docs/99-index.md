@@ -18,6 +18,7 @@ summary: "Vollstaendiger Index aller Second-Brain-Dokumente."
 | [session-00-summary.md](20-sessions/session-00-summary.md) | completed | Greenfield-Scaffolding: 6 Workspaces (NestJS 10 + Next.js 14), pgvector/Redis/MinIO Docker, WS-Echo end-to-end, CI + Husky + Quality-Gate 10/10 PASS. |
 | [session-01-summary.md](20-sessions/session-01-summary.md) | completed | Vollstaendiges Prisma-5-Schema (19 Models + 7 Enums + pgvector(1536)) in @nextgen/db plus idempotenter Seed (3 User, 1 Pipeline + 6 Stages, 10 Orgs, 20 Persons, 30 Deals, 50 Activities, 5 Products, 3 Projects + 15 Tasks, 1 Template). Initial-Migration deployed, Quality-Gate 10/10 PASS. |
 | [session-02-summary.md](20-sessions/session-02-summary.md) | completed | Vollstaendiges v3.0-Auth-System: JWT-15min + Refresh-Token-Family-Rotation mit Replay-Detection, TOTP-2FA (AES-256-GCM-encrypted), OAuth Google/Microsoft (feature-flagged), RBAC-Hierarchie, Rate-Limit 10/15min/IP, Password-Reset, NextAuth-Frontend. WS-JWT-Handshake schliesst Tech-Debt #1. 10/10 ACs, 97 API-Tests (97.1% Coverage), 14 Web-Tests (100%). |
+| [session-03-summary.md](20-sessions/session-03-summary.md) | completed | NavRail (60/220px, Hover+Hamburger), DashboardLayout (3-Spalten), 10 Stub-Pages, Zustand-UIStore (persist), Mobile Bottom-Nav + Sheet. Pakete: lucide-react, zustand. 45 Web-Tests, 99.8% Coverage. 10/10 ACs. |
 
 ## Reviews (30-reviews/)
 
