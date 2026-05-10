@@ -1,7 +1,7 @@
 # NextGen CRM — Claude Code Context
 
-> **v4.1** | Stand: 2026-05-10 | Aktive Session: Session 2 (Authentication) | Branch: feature/session-2-authentication
-> Letztes Update: 2026-05-10 (Session 2 Authentication)
+> **v4.2** | Stand: 2026-05-10 | Aktive Session: Session 4 (M8 Kontakte) | Branch: feature/session-4-contacts
+> Letztes Update: 2026-05-10 (Session 3 Navigation / App-Shell)
 
 ## Mission
 AI-natives B2B-CRM mit 10 Modulen + 3 KI-Agenten. Orientiert an Pipedrive,
@@ -38,7 +38,7 @@ nextgen-crm/
 | 0 | Scaffolding + CLAUDE.md + WebSocket-Basis | ✅ | feature/session-0-scaffolding | 14/14 (Selbstcheck) |
 | 1 | DB-Schema + Prisma + Seed | ✅ | feature/session-1-db-schema | 11/11 |
 | 2 | Authentication (JWT, RBAC, 2FA, PW-Reset) | ✅ | feature/session-2-authentication | 10/10 |
-| 3 | Navigation / App-Shell | ⬜ | — | — |
+| 3 | Navigation / App-Shell | ✅ | feature/session-3-navigation | 10/10 |
 | 4 | M8 Kontakte | ⬜ | — | — |
 | 5 | M3 Deals — Kritischer Pfad | ⬜ | — | — |
 | 6 | M1 Pulse-Feed | ⬜ | — | — |
@@ -125,28 +125,24 @@ nextgen-crm/
    - D4 `onDelete: Cascade` fuer Kindelemente (Session 5/12)
    - A1 Singleton-Disconnect-Lifecycle fuer PrismaClient (Session 2 / PrismaService)
    - T2/T3 Test-Coverage: Seed-Idempotenz + Disconnect-Order (Session 16a)
+10. **[Tech-Debt Session 3] Badge-Counts Placeholder** — `inboxCount`/`overdueCount` props in NavRail default 0. Echte API-Anbindung: Session 11 (Inbox) und Session 7 (Aktivitäten).
+11. **[Tech-Debt Session 3] Bell-Button ohne Handler** — Notifications-Bell hat keinen onClick. Geplant Session 6/7.
+12. **[Tech-Debt Session 3] `settings/security` ohne DashboardLayout** — Seite nutzt noch kein App-Shell-Layout. Refactoring in Session 4 oder eigenem PR.
 
 ---
 
 ## Aktuelle Session-Notizen
 <!-- Wird bei /session-end überschrieben. Enthält In-Progress-Details. -->
-Aktive Session: Session 2 (Authentication & Authorization) — vollständige v3.0-Spec implementiert.
+Aktive Session: Session 4 (M8 Kontakte).
 
-**Backend (`apps/api`):**
-- `PrismaService` (Global, `OnModuleInit/Destroy`-Lifecycle), `EncryptionService` (AES-256-GCM), `MailService`-Stub.
-- `AuthModule`: JWT-Access-Token (15 min, validiert `pwChangedAt` gegen DB), opaque Refresh-Token mit `family`+`replacedByToken`-Rotation und Replay-Detection (Family-Wide-Revoke), `pre-2fa`/`setup-2fa` JWT-Typen.
-- 2FA via `otplib` + `qrcode`, Secret AES-256-GCM-verschlüsselt; ADMINs ohne 2FA werden bei Login auf `setup-2fa`-Token blockiert.
-- Password-Reset (1 h Token, bcrypt-hashed, timing-safe `forgotPassword` ≥200 ms); Session-Invalidation bei Reset/Change-Password (revoke aller RTs in TX).
-- OAuth2 Google + Microsoft (passport-google-oauth20, passport-microsoft) — **feature-flagged** über `*_OAUTH_CLIENT_ID`-ENV; Tokens werden encrypted in `gmailTokenEncrypted`/`outlookTokenEncrypted` gespeichert.
-- Rate-Limiting via `@nestjs/throttler` v6: 10 Req / 15 min / IP auf `/login`, `/register`, `/forgot-password`, `/2fa/validate`. Globale Default-Throttle 100/min.
-- Globaler `JwtAuthGuard` via `APP_GUARD` + `@Public()`-Decorator-Opt-Out.
-- `EventsGateway.handleConnection` verifiziert JWT (closes Tech-Debt #1).
+**Voraussetzungen erfüllt (aus Session 3):**
+- `DashboardLayout` mit optionalem `sidebar`-Prop bereit (`components/layout/DashboardLayout.tsx`)
+- `/contacts`-Stub unter `app/(dashboard)/contacts/page.tsx` vorhanden
+- `useSession()` für RBAC-Guards, `apiFetch()` für HTTP-Aufrufe (beide aus Session 2)
+- Design-Tokens und Tailwind-Theme-Extension aus Session 3 verfügbar
 
-**Frontend (`apps/web`):**
-- NextAuth Credentials-Provider (`authorize` proxied zu `/auth/login`, akzeptiert auch reine `accessToken`-Handoffs nach OAuth/2FA-Flows).
-- Pages: `/login`, `/register` (zxcvbn-Stärke), `/forgot-password`, `/reset-password`, `/2fa-challenge`, `/2fa-setup`, `/auth/oauth-callback`, `/settings/security`.
-- Middleware schützt alle Nicht-Auth-Routes per `getToken()`.
-- Build PASS, ESLint PASS, Test-Coverage 100% auf neuen `lib/api-client.ts`.
+**Session 3 abgeschlossen:** NavRail (60/220px), DashboardLayout, 10 Stub-Pages, Zustand-UIStore, Mobile Bottom-Nav + Sheet. 45 Web-Tests, 99.8% Coverage. Kein Schema-Delta, keine neuen Env-Vars.
+→ Details: [docs/20-sessions/session-03-summary.md](docs/20-sessions/session-03-summary.md)
 
 **Tests:** 97 API-Tests (97% Coverage), 14 Web-Tests (100% Coverage).
 
