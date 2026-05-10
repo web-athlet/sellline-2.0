@@ -1,7 +1,7 @@
 # NextGen CRM — Claude Code Context
 
-> **v4.0** | Stand: 2026-05-09 | Aktive Session: Security-Fix-Session-1 | Branch: fix/session-1-security
-> Letztes Update: 2026-05-09 (Session 1 Security-Fix)
+> **v4.1** | Stand: 2026-05-10 | Aktive Session: Session 2 (Authentication) | Branch: feature/session-2-authentication
+> Letztes Update: 2026-05-10 (Session 2 Authentication)
 
 ## Mission
 AI-natives B2B-CRM mit 10 Modulen + 3 KI-Agenten. Orientiert an Pipedrive,
@@ -37,7 +37,7 @@ nextgen-crm/
 |---|-------|--------|--------|-------------|
 | 0 | Scaffolding + CLAUDE.md + WebSocket-Basis | ✅ | feature/session-0-scaffolding | 14/14 (Selbstcheck) |
 | 1 | DB-Schema + Prisma + Seed | ✅ | feature/session-1-db-schema | 11/11 |
-| 2 | Authentication (JWT, RBAC, 2FA, PW-Reset) | ⬜ | — | — |
+| 2 | Authentication (JWT, RBAC, 2FA, PW-Reset) | ✅ | feature/session-2-authentication | 10/10 |
 | 3 | Navigation / App-Shell | ⬜ | — | — |
 | 4 | M8 Kontakte | ⬜ | — | — |
 | 5 | M3 Deals — Kritischer Pfad | ⬜ | — | — |
@@ -107,7 +107,7 @@ nextgen-crm/
 ## Bekannte Offene Punkte / BLOCKER
 <!-- @doc-keeper aktualisiert nach jedem Review -->
 
-1. **[Tech-Debt] JWT-WS-Handshake fehlt** — Inline-TODO im Gateway: `// TODO(session-2): JWT-Handshake-Guard einbauen`. Kein BLOCKER bis Session 2.
+1. **[Done] JWT-WS-Handshake** — In Session 2 implementiert: `EventsGateway.handleConnection` verifiziert `client.handshake.auth.token` (Fallback `Authorization: Bearer`) per `JwtService`, hängt `client.data.user` an, disconnected sonst. Inline-TODO entfernt.
 2. **[Tech-Debt] Audit-Threshold auf `critical`** — Next.js 14.2.x CVE (GHSA-q4gf-8mx6-v5v3 DoS via Server Components). Wartet auf Next-15-Migration in Session 15. Threshold danach zurück auf `high`.
 3. **[Tech-Debt] `vitest.workspace.ts` entfernt** — Pro-Package Coverage via Turbo; Quality-Gate-Regex matcht mehrere "All files"-Zeilen.
 4. **[Info] `docs/.obsidian/` in `.gitignore`** — lokaler Editor-State, kein Repo-Inhalt.
@@ -130,7 +130,25 @@ nextgen-crm/
 
 ## Aktuelle Session-Notizen
 <!-- Wird bei /session-end überschrieben. Enthält In-Progress-Details. -->
-Aktive Session: Security-Fix-Session-1 (4 BLOCKER aus Deep-Review behoben — siehe Offene Punkte #8).
+Aktive Session: Session 2 (Authentication & Authorization) — vollständige v3.0-Spec implementiert.
+
+**Backend (`apps/api`):**
+- `PrismaService` (Global, `OnModuleInit/Destroy`-Lifecycle), `EncryptionService` (AES-256-GCM), `MailService`-Stub.
+- `AuthModule`: JWT-Access-Token (15 min, validiert `pwChangedAt` gegen DB), opaque Refresh-Token mit `family`+`replacedByToken`-Rotation und Replay-Detection (Family-Wide-Revoke), `pre-2fa`/`setup-2fa` JWT-Typen.
+- 2FA via `otplib` + `qrcode`, Secret AES-256-GCM-verschlüsselt; ADMINs ohne 2FA werden bei Login auf `setup-2fa`-Token blockiert.
+- Password-Reset (1 h Token, bcrypt-hashed, timing-safe `forgotPassword` ≥200 ms); Session-Invalidation bei Reset/Change-Password (revoke aller RTs in TX).
+- OAuth2 Google + Microsoft (passport-google-oauth20, passport-microsoft) — **feature-flagged** über `*_OAUTH_CLIENT_ID`-ENV; Tokens werden encrypted in `gmailTokenEncrypted`/`outlookTokenEncrypted` gespeichert.
+- Rate-Limiting via `@nestjs/throttler` v6: 10 Req / 15 min / IP auf `/login`, `/register`, `/forgot-password`, `/2fa/validate`. Globale Default-Throttle 100/min.
+- Globaler `JwtAuthGuard` via `APP_GUARD` + `@Public()`-Decorator-Opt-Out.
+- `EventsGateway.handleConnection` verifiziert JWT (closes Tech-Debt #1).
+
+**Frontend (`apps/web`):**
+- NextAuth Credentials-Provider (`authorize` proxied zu `/auth/login`, akzeptiert auch reine `accessToken`-Handoffs nach OAuth/2FA-Flows).
+- Pages: `/login`, `/register` (zxcvbn-Stärke), `/forgot-password`, `/reset-password`, `/2fa-challenge`, `/2fa-setup`, `/auth/oauth-callback`, `/settings/security`.
+- Middleware schützt alle Nicht-Auth-Routes per `getToken()`.
+- Build PASS, ESLint PASS, Test-Coverage 100% auf neuen `lib/api-client.ts`.
+
+**Tests:** 97 API-Tests (97% Coverage), 14 Web-Tests (100% Coverage).
 
 ---
 
@@ -146,9 +164,19 @@ Aktive Session: Security-Fix-Session-1 (4 BLOCKER aus Deep-Review behoben — si
 | `MINIO_BUCKET` | MinIO Bucket-Name | 0 |
 | `NEXT_PUBLIC_API_URL` | Web → API HTTP-Basis-URL | 0 |
 | `NEXT_PUBLIC_WS_URL` | Web → API WebSocket-URL | 0 |
-| `JWT_SECRET` | JWT Signing Secret (≥32 chars) | 2 |
-| `NEXTAUTH_SECRET` | NextAuth Secret | 2 |
-| `NEXTAUTH_URL` | App Base URL | 2 |
+| `JWT_SECRET` | JWT Signing Secret (≥32 chars) — signiert access/pre-2fa/setup-2fa Tokens | 2 |
+| `JWT_ACCESS_TTL` | Access-Token TTL (default `15m`, vercel/ms-Format) | 2 |
+| `JWT_REFRESH_TTL` | Refresh-Token TTL (default `30d`) | 2 |
+| `NEXTAUTH_SECRET` | NextAuth Session-JWT Secret (≥32 chars) | 2 |
+| `NEXTAUTH_URL` | App Base URL für NextAuth Callback-URLs | 2 |
+| `ENCRYPTION_KEY` | AES-256-GCM Key — exakt 64 Hex-Chars (= 32 Byte). Verschlüsselt OAuth-Tokens + 2FA-Secrets. Verlust bricht alle 2FA + OAuth-Verknüpfungen. | 2 |
+| `COOKIE_DOMAIN` | Optionale Cookie-Domain für Refresh-Token-Cookie. Leer = aktueller Host. | 2 |
+| `GOOGLE_OAUTH_CLIENT_ID` | Google OAuth Client ID (optional — ohne Wert sind /auth/google-Routen 503) | 2 |
+| `GOOGLE_OAUTH_CLIENT_SECRET` | Google OAuth Client Secret | 2 |
+| `GOOGLE_OAUTH_CALLBACK_URL` | Google OAuth Callback URL | 2 |
+| `MICROSOFT_OAUTH_CLIENT_ID` | Microsoft OAuth Client ID (optional) | 2 |
+| `MICROSOFT_OAUTH_CLIENT_SECRET` | Microsoft OAuth Client Secret | 2 |
+| `MICROSOFT_OAUTH_CALLBACK_URL` | Microsoft OAuth Callback URL | 2 |
 | `SEED_ALLOW_PROD` | Prod-Seed-Guard-Override (setze `1` um Seed in production zu erzwingen — sonst exit 1) | 1-fix |
 | _(weitere folgen pro Session)_ | | |
 
