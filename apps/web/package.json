@@ -16,9 +16,11 @@
     "@nextgen/types": "workspace:*",
     "@nextgen/utils": "workspace:*",
     "next": "^14.2.18",
+    "next-auth": "^4.24.10",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "socket.io-client": "^4.8.0"
+    "socket.io-client": "^4.8.0",
+    "zxcvbn": "^4.4.2"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.5.0",
@@ -27,6 +29,7 @@
     "@types/node": "^20.16.5",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
+    "@types/zxcvbn": "^4.4.5",
     "@vitejs/plugin-react": "^4.3.1",
     "@vitest/coverage-v8": "^1.6.1",
     "autoprefixer": "^10.4.20",

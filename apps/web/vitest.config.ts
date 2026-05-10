@@ -20,7 +20,12 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'html'],
       include: ['lib/**/*.ts', 'hooks/**/*.ts'],
-      exclude: ['**/*.test.{ts,tsx}', 'lib/socket.ts'],
+      exclude: [
+        '**/*.test.{ts,tsx}',
+        'lib/socket.ts',
+        // NextAuth config is declarative wiring — exercised end-to-end, not unit-tested
+        'lib/auth-options.ts',
+      ],
       thresholds: {
         statements: 80,
         branches: 80,
