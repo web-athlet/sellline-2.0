@@ -9,14 +9,17 @@ interface DayNavProps {
 }
 
 function formatDisplayDate(iso: string): string {
-  const d = new Date(iso + 'T00:00:00');
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const diff = Math.round((d.getTime() - today.getTime()) / 86_400_000);
-  if (diff === 0) return 'Heute';
-  if (diff === -1) return 'Gestern';
-  if (diff === 1) return 'Morgen';
-  return d.toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: 'long' });
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const yesterdayStr = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
+  const tomorrowStr = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
+  if (iso === todayStr) return 'Heute';
+  if (iso === yesterdayStr) return 'Gestern';
+  if (iso === tomorrowStr) return 'Morgen';
+  return new Date(iso + 'T00:00:00Z').toLocaleDateString('de-DE', {
+    weekday: 'long',
+    day: '2-digit',
+    month: 'long',
+  });
 }
 
 export function DayNav({ date, onPrev, onNext }: DayNavProps) {
