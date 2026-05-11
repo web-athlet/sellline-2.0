@@ -20,6 +20,7 @@ summary: "Vollstaendiger Index aller Second-Brain-Dokumente."
 | [session-02-summary.md](20-sessions/session-02-summary.md) | completed | Vollstaendiges v3.0-Auth-System: JWT-15min + Refresh-Token-Family-Rotation mit Replay-Detection, TOTP-2FA (AES-256-GCM-encrypted), OAuth Google/Microsoft (feature-flagged), RBAC-Hierarchie, Rate-Limit 10/15min/IP, Password-Reset, NextAuth-Frontend. WS-JWT-Handshake schliesst Tech-Debt #1. 10/10 ACs, 97 API-Tests (97.1% Coverage), 14 Web-Tests (100%). |
 | [session-03-summary.md](20-sessions/session-03-summary.md) | completed | NavRail (60/220px, Hover+Hamburger), DashboardLayout (3-Spalten), 10 Stub-Pages, Zustand-UIStore (persist), Mobile Bottom-Nav + Sheet. Pakete: lucide-react, zustand. 45 Web-Tests, 99.8% Coverage. 10/10 ACs. |
 | [session-04-summary.md](20-sessions/session-04-summary.md) | completed | M8 vollständig: Contacts/Orgs CRUD, Duplikat-Erkennung (fast-fuzzy, 0.85), Merge, Org-Hierarchie. 159 API-Tests (~98%), 99 Web-Tests (89.44%). 5/5 ACs. |
+| [session-05-summary.md](20-sessions/session-05-summary.md) | completed | M3 vollständig: Deals-Kanban (@dnd-kit), PipelinesModule, Pipeline-Value server-seitig, WS Pipeline-Room-Scoping, Closed-Deal-Guard. 200 API-Tests (~98%), 164 Web-Tests. 4/4 ACs. PRs #7+#8. |
 
 ## Reviews (30-reviews/)
 
@@ -27,6 +28,8 @@ summary: "Vollstaendiger Index aller Second-Brain-Dokumente."
 |---|---|---|
 | [session-0-light-review.md](30-reviews/session-0-light-review.md) | Light | Session 0 Light-Review: Scaffolding und WebSocket-Basis — Befunde behoben. |
 | [session-1-deep-review.md](30-reviews/session-1-deep-review.md) | Deep (Tier 3) | Session 1 Deep-Review: 4 BLOCKER initial (2 echt, 2 FP) + 13 weitere Findings. Echte Fixes in `fix/session-1-security`. |
+| [session-5-deep-review.md](30-reviews/session-5-deep-review.md) | Deep (Tier 3) | Session 5 Deep-Review: 4 BLOCKER initial — 3 FALSE POSITIVES (halluzinierter Code), 1 echt (B4 WS-Broadcast). H3 (Closed-Deal-Guard) ebenfalls echt. Beide gefixt in `fix/session-5-security`. |
+| [session-5-light-review.md](30-reviews/session-5-light-review.md) | Light | Session 5 Light-Review: CLEAN — Quality-Gate 10/10 grün (200 API, 164 Web). Merge-ready. |
 
 ## Module (10-modules/)
 

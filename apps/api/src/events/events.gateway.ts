@@ -16,11 +16,13 @@ import type {
   DealUpdatedEvent,
   PingPayload,
   PongPayload,
+  PulseFeedUpdatedEvent,
 } from '@nextgen/types';
 import type { Server, Socket } from 'socket.io';
 import type { AccessTokenPayload } from '../modules/auth/auth.types';
 
 const PIPELINE_ROOM = (id: string): string => `pipeline:${id}`;
+const USER_ROOM = (id: string): string => `user:${id}`;
 
 const WEB_ORIGIN = process.env.NEXT_PUBLIC_WEB_URL ?? 'http://localhost:3000';
 
@@ -50,6 +52,9 @@ export class EventsGateway implements OnGatewayConnection {
         return;
       }
       client.data.user = { id: payload.sub, email: payload.email, role: payload.role };
+      // Each authenticated socket joins a personal room for user-scoped events
+      // (pulse:feed_updated, future notification events).
+      void client.join(USER_ROOM(payload.sub));
     } catch {
       this.logger.warn(`[WS] connection rejected — invalid token (sid=${client.id})`);
       client.disconnect(true);
@@ -127,5 +132,10 @@ export class EventsGateway implements OnGatewayConnection {
 
   emitDealRotIndicator(payload: DealRotIndicatorEvent): void {
     this.server?.to(PIPELINE_ROOM(payload.pipelineId)).emit('deal:rot_indicator', payload);
+  }
+
+  emitPulseFeedUpdated(userId: string, tab: PulseFeedUpdatedEvent['tab']): void {
+    const payload: PulseFeedUpdatedEvent = { userId, tab, ts: Date.now() };
+    this.server?.to(USER_ROOM(userId)).emit('pulse:feed_updated', payload);
   }
 }

@@ -54,3 +54,13 @@ export type DealEventName =
   | 'deal:stage_changed'
   | 'deal:deleted'
   | 'deal:rot_indicator';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Pulse-Feed events — emitted per-user via user room after cache invalidation.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface PulseFeedUpdatedEvent {
+  userId: string;
+  tab: 'followups' | 'missed' | 'opportunities' | null;
+  ts: number;
+}

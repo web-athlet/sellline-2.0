@@ -1,7 +1,7 @@
 # NextGen CRM — Claude Code Context
 
-> **v4.3** | Stand: 2026-05-11 | Aktive Session: Session 5 (M3 Deals) | Branch: feature/session-5-deals
-> Letztes Update: 2026-05-11 (Session 4 M8 Kontakte & Organisationen)
+> **v4.4** | Stand: 2026-05-11 | Aktive Session: Session 6 (M1 Pulse-Feed) | Branch: feature/session-6-pulse
+> Letztes Update: 2026-05-11 (Session 5 M3 Deals — Kritischer Pfad)
 
 ## Mission
 AI-natives B2B-CRM mit 10 Modulen + 3 KI-Agenten. Orientiert an Pipedrive,
@@ -40,7 +40,7 @@ nextgen-crm/
 | 2 | Authentication (JWT, RBAC, 2FA, PW-Reset) | ✅ | feature/session-2-authentication | 10/10 |
 | 3 | Navigation / App-Shell | ✅ | feature/session-3-navigation | 10/10 |
 | 4 | M8 Kontakte & Organisationen | ✅ | feature/session-4-contacts | 5/5 |
-| 5 | M3 Deals — Kritischer Pfad | ⬜ | — | — |
+| 5 | M3 Deals — Kritischer Pfad | ✅ | feature/session-5-deals | 4/4 |
 | 6 | M1 Pulse-Feed | ⬜ | — | — |
 | 7 | M7 Aktivitäten | ⬜ | — | — |
 | 8 | M2 Leads & Webformulare | ⬜ | — | — |
@@ -98,7 +98,7 @@ nextgen-crm/
 **Projects:** `Project`, `Task`, `ProjectTemplate`
 **AI & Audit:** `AIInsight`, `AuditLog`
 
-**Enums:** `Role`, `ActivityType`, `Priority`, `DiscountType`, `EnrichmentStatus`, `CampaignStatus`, `ProjectStatus`
+**Enums:** `Role`, `ActivityType`, `Priority`, `DiscountType`, `EnrichmentStatus`, `CampaignStatus`, `ProjectStatus`, `DealStatus`
 
 **pgvector:** `Organization.enrichmentEmbedding vector(1536)` (Extension v0.8.2 installiert).
 
@@ -131,21 +131,26 @@ nextgen-crm/
 13. **[Tech-Debt Session 4] `DuplicateMergePanel.tsx` 0% Test-Coverage** — Komplexes State-Management, geplant Session 16a.
 14. **[Tech-Debt Session 4] Detail-Tabs Placeholder** — `/contacts/[id]` Tabs Deals/Activities/Files/Emails zeigen Placeholder. Echte Anbindung: Sessions 5, 7, 11.
 15. **[Tech-Debt Session 4] "Neuer Kontakt"-Button löst `alert()` aus** — Modal-Implementierung verschoben auf Session 5.
+16. **[Tech-Debt Session 5] `deal-format.test.ts` nutzt echten System-Clock** — `new Date()` ohne Mock; fragile Tests. Geplant Session 16a.
+17. **[Tech-Debt Session 5] Index-Migration ohne `CONCURRENTLY`** — `20260511120000_deals_order_score_closing` enthält `CREATE INDEX` ohne `CONCURRENTLY`. Bei Prod-Migration manuell als separate Migration ausführen. Geplant Session 15.
+18. **[Tech-Debt Session 5] `providers.tsx` kein `staleTime`-Default** — WS-getriggerte Refetches entstehen (redundante HTTP-Calls nach jedem Deal-Event). Geplant Session 6 oder eigener PR.
+19. **[Tech-Debt Session 5] `pipeline:subscribe` prüft Org-Zugehörigkeit nicht** — akzeptabel bei Single-Tenant; muss bei Multi-Tenancy (Session 15) via `prisma.pipeline.findFirst({ where: { id, orgId } })` geschützt werden.
 
 ---
 
 ## Aktuelle Session-Notizen
-Aktive Session: Session 5 (M3 Deals — Kritischer Pfad).
+Aktive Session: Session 6 (M1 Pulse-Feed).
 
-**Voraussetzungen erfüllt (aus Session 4):**
-- `GET /api/v1/contacts` für Participant-Autocomplete bereit
-- `GET /api/v1/organizations` für Deal-Org-Link bereit
+**Voraussetzungen erfüllt (aus Session 5):**
+- `EventsGateway` mit Pipeline-Room-Infra auf `main`
+- `GET /api/v1/deals/kanban` für Feed-Daten bereit
+- Bell-Button (Tech-Debt Session 3) wird in Session 6 adressiert
 - `DashboardLayout`, `apiFetch()`, `useSession()`, Design-Tokens alle verfügbar
 
-**Session 4 abgeschlossen:** ContactsModule + OrganizationsModule vollständig (CRUD, Timeline, Duplikat-Erkennung/Merge, Org-Hierarchie). Partial Unique Index auf `Person.emails[1]`. 159 API-Tests (~98%), 99 Web-Tests (89.44%). PR #6.
-→ Details: [docs/20-sessions/session-04-summary.md](docs/20-sessions/session-04-summary.md)
+**Session 5 abgeschlossen:** DealsModule + PipelinesModule vollständig (Kanban, DnD, Pipeline-Value server-seitig, WS Pipeline-Room-Scoping, Closed-Deal-Guard). DB-Migration `20260511120000_deals_order_score_closing`. 200 API-Tests (~98%), 164 Web-Tests. PRs #7 + #8.
+→ Details: [docs/20-sessions/session-05-summary.md](docs/20-sessions/session-05-summary.md)
 
-**Tests (kumulativ):** 159 API-Tests (~98% Coverage), 99 Web-Tests (89.44% Lines).
+**Tests (kumulativ):** 200 API-Tests (~98% Coverage), 164 Web-Tests (~85% Lines).
 
 ---
 
