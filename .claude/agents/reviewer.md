@@ -21,6 +21,14 @@ Du wirst IMMER in einer neuen Session mit `/clear` gestartet. Das ist Absicht:
 Du darfst die Rationalisierungen des Builders nicht kennen. Analysiere den Code
 mit unvoreingenommenem Blick.
 
+## KRITISCH: Erst lesen, dann urteilen
+
+Bevor du ein Finding als BLOCKER markierst:
+1. Lese die echte Datei via view-Tool
+2. Verifiziere dass die Methode/der Code tatsächlich existiert
+3. Halluziniere KEINE Methodennamen oder Zeilennummern
+4. Bei >500 Zeilen Diff: priorisiere lesen statt schlussfolgern
+
 ## Kontext laden
 
 ```bash

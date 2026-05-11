@@ -134,12 +134,17 @@ model Deal {
   orgId                String?
   probability          Int       @default(0)
   rotIndicator         Boolean   @default(false)
+  score                Int       @default(0)
   scoreUpdatedAt       DateTime?
   ghostingSnoozedUntil DateTime?
+  closingDate          DateTime?
   closedAt             DateTime?
   wonAt                DateTime?
   lostAt               DateTime?
   lostReason           String?
+  // In-stage sort key for DnD reordering (lower = top). Maintained server-side
+  // on PATCH /:id/stage so two clients converge to the same column ordering.
+  order                Int       @default(0)
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
   deletedAt            DateTime?
@@ -155,6 +160,7 @@ model Deal {
   participants Person[]      @relation("DealParticipants")
 
   @@index([pipelineId, stageId, deletedAt])
+  @@index([stageId, order])
   @@index([ownerId, updatedAt(sort: Desc)])
   @@index([rotIndicator, deletedAt])
   @@index([orgId])

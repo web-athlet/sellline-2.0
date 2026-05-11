@@ -1,14 +1,26 @@
 import { Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import {
+  ConnectedSocket,
   MessageBody,
   OnGatewayConnection,
   SubscribeMessage,
   WebSocketGateway,
+  WebSocketServer,
 } from '@nestjs/websockets';
-import type { PingPayload, PongPayload } from '@nextgen/types';
-import type { Socket } from 'socket.io';
+import type {
+  DealCreatedEvent,
+  DealDeletedEvent,
+  DealRotIndicatorEvent,
+  DealStageChangedEvent,
+  DealUpdatedEvent,
+  PingPayload,
+  PongPayload,
+} from '@nextgen/types';
+import type { Server, Socket } from 'socket.io';
 import type { AccessTokenPayload } from '../modules/auth/auth.types';
+
+const PIPELINE_ROOM = (id: string): string => `pipeline:${id}`;
 
 const WEB_ORIGIN = process.env.NEXT_PUBLIC_WEB_URL ?? 'http://localhost:3000';
 
@@ -18,6 +30,9 @@ const WEB_ORIGIN = process.env.NEXT_PUBLIC_WEB_URL ?? 'http://localhost:3000';
 })
 export class EventsGateway implements OnGatewayConnection {
   private readonly logger = new Logger(EventsGateway.name);
+
+  @WebSocketServer()
+  server!: Server;
 
   constructor(private readonly jwt: JwtService) {}
 
@@ -58,5 +73,59 @@ export class EventsGateway implements OnGatewayConnection {
         ts: Date.now(),
       },
     };
+  }
+
+  // Clients opening a Kanban/list for a given pipeline subscribe to the
+  // corresponding room. Deal events are then scoped to that room so they do not
+  // leak to unrelated sessions.
+  @SubscribeMessage('pipeline:subscribe')
+  handlePipelineSubscribe(
+    @MessageBody() data: { pipelineId?: unknown },
+    @ConnectedSocket() client: Socket,
+  ):
+    | { event: 'pipeline:subscribed'; data: { pipelineId: string } }
+    | { event: 'error'; data: { reason: string } } {
+    if (!client.data?.user) {
+      return { event: 'error', data: { reason: 'unauthenticated' } };
+    }
+    if (typeof data?.pipelineId !== 'string' || data.pipelineId.length === 0) {
+      return { event: 'error', data: { reason: 'invalid_pipeline_id' } };
+    }
+    void client.join(PIPELINE_ROOM(data.pipelineId));
+    return { event: 'pipeline:subscribed', data: { pipelineId: data.pipelineId } };
+  }
+
+  @SubscribeMessage('pipeline:unsubscribe')
+  handlePipelineUnsubscribe(
+    @MessageBody() data: { pipelineId?: unknown },
+    @ConnectedSocket() client: Socket,
+  ):
+    | { event: 'pipeline:unsubscribed'; data: { pipelineId: string } }
+    | { event: 'error'; data: { reason: string } } {
+    if (typeof data?.pipelineId !== 'string' || data.pipelineId.length === 0) {
+      return { event: 'error', data: { reason: 'invalid_pipeline_id' } };
+    }
+    void client.leave(PIPELINE_ROOM(data.pipelineId));
+    return { event: 'pipeline:unsubscribed', data: { pipelineId: data.pipelineId } };
+  }
+
+  emitDealCreated(payload: DealCreatedEvent): void {
+    this.server?.to(PIPELINE_ROOM(payload.pipelineId)).emit('deal:created', payload);
+  }
+
+  emitDealUpdated(payload: DealUpdatedEvent): void {
+    this.server?.to(PIPELINE_ROOM(payload.pipelineId)).emit('deal:updated', payload);
+  }
+
+  emitDealStageChanged(payload: DealStageChangedEvent): void {
+    this.server?.to(PIPELINE_ROOM(payload.pipelineId)).emit('deal:stage_changed', payload);
+  }
+
+  emitDealDeleted(payload: DealDeletedEvent): void {
+    this.server?.to(PIPELINE_ROOM(payload.pipelineId)).emit('deal:deleted', payload);
+  }
+
+  emitDealRotIndicator(payload: DealRotIndicatorEvent): void {
+    this.server?.to(PIPELINE_ROOM(payload.pipelineId)).emit('deal:rot_indicator', payload);
   }
 }
