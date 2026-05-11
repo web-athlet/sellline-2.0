@@ -115,7 +115,14 @@ export function useDealsSocket(pipelineId: string | undefined): void {
     socket.on('deal:deleted', handleDeleted);
     socket.on('deal:rot_indicator', handleRot);
 
-    if (!socket.connected) socket.connect();
+    const subscribe = () => socket.emit('pipeline:subscribe', { pipelineId });
+
+    if (socket.connected) {
+      subscribe();
+    } else {
+      socket.once('connect', subscribe);
+      socket.connect();
+    }
 
     return () => {
       socket.off('deal:created', handleCreated);
@@ -123,6 +130,10 @@ export function useDealsSocket(pipelineId: string | undefined): void {
       socket.off('deal:stage_changed', handleStageChanged);
       socket.off('deal:deleted', handleDeleted);
       socket.off('deal:rot_indicator', handleRot);
+      socket.off('connect', subscribe);
+      if (socket.connected) {
+        socket.emit('pipeline:unsubscribe', { pipelineId });
+      }
     };
   }, [accessToken, pipelineId, queryClient]);
 }

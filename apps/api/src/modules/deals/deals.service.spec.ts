@@ -184,6 +184,21 @@ describe('DealsService', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
+    it('refuses to change stage on a won deal', async () => {
+      mockPrisma.deal.findFirst.mockResolvedValue({ ...baseDeal, wonAt: new Date() });
+      await expect(service.changeStage('deal-1', { stageId: 'stage-2' }, owner)).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(mockPrisma.stage.findFirst).not.toHaveBeenCalled();
+    });
+
+    it('refuses to change stage on a lost deal', async () => {
+      mockPrisma.deal.findFirst.mockResolvedValue({ ...baseDeal, lostAt: new Date() });
+      await expect(service.changeStage('deal-1', { stageId: 'stage-2' }, owner)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
     it('shifts higher cards down + emits stage_changed', async () => {
       mockPrisma.deal.findFirst.mockResolvedValue(baseDeal);
       mockPrisma.stage.findFirst.mockResolvedValue({ id: 'stage-2' });
