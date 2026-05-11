@@ -1,11 +1,11 @@
 ---
-title: "Light Review Session 4 — M8 Kontakte & Organisationen"
+title: "Light Review Session 4 — M8 Kontakte & Organisationen (Post-Fix)"
 session: 4
 type: light
-status: fixes-required
+status: clean
 date: 2026-05-11
-blockers: 3
-summary: "Light Review Session 4: 3 BLOCKER (findDuplicates DoS, Timeline sentAt null-Sort, Merge notes-Überschreibung)"
+blockers: 0
+summary: "Post-Fix: alle 3 BLOCKER behoben (take:1000, sentAt-Guard, Self-Merge-Guard+notes-Append). 3 MAJOR als Tech-Debt offen."
 ---
 
 # Session 4 Light Review — M8 Kontakte & Organisationen
@@ -14,129 +14,113 @@ summary: "Light Review Session 4: 3 BLOCKER (findDuplicates DoS, Timeline sentAt
 
 ## Scope
 
-`git diff main..feature/session-4-contacts` — 39 Dateien, 3873 Zeilen.
+`git diff main..feature/session-4-contacts` — 40 Dateien, 4041 Zeilen.
 Module: `ContactsModule` (CRUD, Duplikat-Erkennung, Merge, Timeline), `OrganizationsModule` (CRUD, Tree),
 DTOs, Frontend-Komponenten, Migration.
 
-## Findings
+---
 
-| # | Severity | Datei:Zeile | Problem | Vorschlag |
-|---|----------|-------------|---------|-----------|
-| B1 | BLOCKER | `contacts.service.ts:~L480` | `findDuplicates` kein Limit — O(n²) DoS | `take: 1000` Hard-Cap + HTTP 429 |
-| B2 | BLOCKER | `contacts.service.ts:~L620` | `sentAt: null` → `new Date(null)` = Epoch 1970, Timeline-Sort falsch | null-Guard im Sort-Comparator |
-| B3 | BLOCKER | `contacts.service.ts:~L340` | Merge überschreibt `notes` des Duplikats + kein Self-Merge-Guard | Append statt Überschreiben, `masterId === duplicateId` Guard |
-| W1 | MAJOR | `merge-contacts.dto.ts` | `masterId`/`duplicateId` ohne `@IsUUID('4')` | `@IsUUID('4')` hinzufügen |
-| W2 | MAJOR | `organizations.service.ts:~L85` | `buildSubTree` kein null-Guard nach `findFirst` — Race Condition → TypeError 500 | `if (!org) return null;` |
-| W3 | MAJOR | `contacts.service.spec.ts` | `findDuplicates` ohne Error-Case-Tests | Mindestens 1 Prisma-Fehler-Szenario |
-| W4 | MAJOR | `DuplicateMergePanel.tsx` | 0% Coverage auf destruktiver Merge-UI | Tests für Merge-Button, Loading, Error — Session 16a |
-| H1 | MINOR | `organizations.service.ts` | N+1 in `buildSubTree` (exponentielle Queries bei breitem Tree) | CTE oder In-Memory-Traversal — Session 9+ |
-| H2 | MINOR | `contacts.controller.ts` | Kein Owner-Check (IDOR) — bekannt bis Session 15 | Session 15 Security-Härtung |
-| H3 | MINOR | `query-contacts.dto.ts` | `search` ohne `@MaxLength()` | `@MaxLength(255)` |
+## BLOCKER-Verifikation (Post-Fix)
+
+| # | Status | Befund |
+|---|--------|--------|
+| B1 | ✅ BEHOBEN | `findDuplicates`: `take: 1000` Hard-Cap in Prisma-Query vorhanden — O(n²) Loop begrenzt |
+| B2 | ✅ BEHOBEN | `getTimeline`: `getDate()`-Helper mit null-Guard — `item.sentAt ? new Date(...) : Date.now()` — kein `new Date(null)` mehr möglich |
+| B3 | ✅ BEHOBEN | `merge()`: Self-Merge-Guard (`masterId === duplicateId` → `BadRequestException`) + notes-Append (`[master.notes, dup.notes].filter(Boolean).join('\n\n')`) korrekt |
 
 ---
 
-## BLOCKER-Details
+## Findings-Übersicht
 
-### B1: `findDuplicates` ohne Limit — DoS-Risiko
+| # | Severity | Datei | Problem | Entscheid |
+|---|----------|-------|---------|-----------|
+| ~~B1~~ | ~~BLOCKER~~ | ~~contacts.service.ts~~ | ~~findDuplicates kein Limit~~ | ✅ Behoben |
+| ~~B2~~ | ~~BLOCKER~~ | ~~contacts.service.ts~~ | ~~sentAt null → Epoch-Sort~~ | ✅ Behoben |
+| ~~B3~~ | ~~BLOCKER~~ | ~~contacts.service.ts~~ | ~~Merge überschreibt notes + kein Self-Merge-Guard~~ | ✅ Behoben |
+| W1 | MAJOR | `merge-contacts.dto.ts` | `masterId`/`duplicateId` ohne `@IsUUID('4')` — jeder String passiert Validation | Tech-Debt → Session 5 oder 15 |
+| W2 | MAJOR | `organizations.service.ts:~L89` | `buildSubTree` kein null-Guard nach `findFirst` — Race Condition → TypeError 500 | Tech-Debt → Session 5 |
+| W3 | MAJOR | `contacts.service.spec.ts` | `findDuplicates` ohne Error-Case-Tests + kein Test für Self-Merge-Guard | Tech-Debt → Session 16a |
+| W4 | MAJOR | `DuplicateMergePanel.tsx` | 0% Coverage auf destruktiver Merge-UI | Tech-Debt → Session 16a |
+| H1 | MINOR | `organizations.service.ts` | N+1 in `buildSubTree` (exponentielle Queries bei breitem Tree) | Session 9+ |
+| H2 | MINOR | `contacts.controller.ts` | Kein Owner-Check (IDOR) — bekannt bis Session 15 | Session 15 |
+| H3 | MINOR | `query-contacts.dto.ts` | `search` ohne `@MaxLength()` | Session 5 |
+| NF1 | MINOR | `contacts.service.ts` | `notes`-Konkatenation ohne Längenbegrenzung (Column unbounded) | Session 15 |
+| NF2 | MINOR | `contacts.service.spec.ts` | Kein Test für `take: 1000` Kappen-Verhalten | Session 16a |
 
-**Datei:** `apps/api/src/contacts/contacts.service.ts` ~Zeile 480
+---
 
-`prisma.person.findMany({ where: { deletedAt: null } })` hat kein `take`. Bei N Kontakten entstehen
-N*(N-1)/2 In-Memory-Fuzzy-Vergleiche. Mit 10.000 Kontakten: ~50 Millionen Vergleiche in einem
-synchronen Loop. Endpunkt ist für alle authentifizierten User erreichbar (kein Admin-Gate) — klassischer
-Anwendungs-DoS über teuren Endpunkt.
+## MAJOR-Details (Tech-Debt, kein Merge-Blocker)
+
+### W1: `merge-contacts.dto.ts` — fehlender `@IsUUID('4')`
+
+`masterId` und `duplicateId` sind nur mit `@IsNotEmpty()` / `@IsString()` dekoriert.
+Jeder beliebige String (z.B. Path-Traversal-Muster oder numerische ID) passiert die Validation
+und landet in der Prisma-Abfrage, die dann ein stilles 404 zurückgibt statt einem 400.
 
 ```ts
 // FIX:
-const persons = await this.prisma.person.findMany({
-  where: { deletedAt: null },
-  select: { id: true, firstName: true, lastName: true, emails: true },
-  take: 1000, // Hard-Cap
-});
-if (persons.length >= 1000) {
-  // Optional: HTTP 429 oder Warnung im Response
-}
+@IsUUID('4')
+masterId: string;
+
+@IsUUID('4')
+duplicateId: string;
 ```
 
 ---
 
-### B2: `getTimeline` — `sentAt: null` führt zu Epoch-0-Sort
+### W2: `organizations.service.ts` — null-Guard in `buildSubTree`
 
-**Datei:** `apps/api/src/contacts/contacts.service.ts` ~Zeile 620
-
-`Email.sentAt` ist `DateTime?` (nullable) im Prisma-Schema. Der Sort-Comparator:
 ```ts
-const dateB = b._type === 'activity' ? (b.dueDate ?? b.createdAt) : b.sentAt;
-return new Date(dateB).getTime() - new Date(dateA).getTime();
+const org = await this.prisma.organization.findFirst({ where: { id, deletedAt: null } });
+// kein null-Check — org?.children würde TypeError werfen
 ```
-`new Date(null).getTime()` = `0` (1970-01-01T00:00:00.000Z). Entwurf-Emails mit `sentAt = null`
-werden lautlos an das Ende der Timeline sortiert — kein Fehler, keine Warnung, aber falsch angezeigte
-Daten in der UI.
+
+Bei Concurrent Soft-Delete oder staler ID in einem rekursiven Aufruf wirft der Zugriff auf
+`org.name` / `{ ...org, children }` einen unbehandelten `TypeError: Cannot read properties of null`.
 
 ```ts
 // FIX:
-const getDate = (item: typeof timeline[number]): number => {
-  if (item._type === 'activity') return new Date(item.dueDate ?? item.createdAt).getTime();
-  return item.sentAt ? new Date(item.sentAt).getTime() : Date.now(); // Entwürfe oben
-};
-return getDate(b) - getDate(a);
+if (!org) return null;
 ```
 
 ---
 
-### B3: Merge überschreibt `notes` + kein Self-Merge-Guard
+### W3: `contacts.service.spec.ts` — fehlende Error-Cases
 
-**Datei:** `apps/api/src/contacts/contacts.service.ts` ~Zeile 340
-
-**Problem 1:** Das Duplikat-Kontakt-Update in der `$transaction` setzt `notes: \`merged into ${masterId}\``.
-Vorhandene `notes` des Duplikats werden ohne Backup überschrieben und sind nach dem Soft-Delete
-unwiederbringlich verloren.
-
-**Problem 2:** Kein Guard für `masterId === duplicateId`. Ein Aufruf mit identischen IDs durchläuft
-die Lookup-Checks (beide finden denselben Kontakt), landet in der Transaktion und soft-deleted
-den Kontakt — Self-Merge löscht Daten.
-
-```ts
-// FIX 1: Self-Merge-Guard (bereits vor den Lookups)
-if (masterId === duplicateId) {
-  throw new BadRequestException('masterId und duplicateId dürfen nicht identisch sein');
-}
-
-// FIX 2: notes als Append (in der $transaction)
-const dupWithNotes = await this.prisma.person.findFirst({
-  where: { id: duplicateId, deletedAt: null },
-  select: { id: true, notes: true },
-});
-// ...
-this.prisma.person.update({
-  where: { id: duplicateId },
-  data: {
-    deletedAt: new Date(),
-    notes: [dupWithNotes?.notes, `merged into ${masterId}`].filter(Boolean).join('\n'),
-  },
-}),
-```
+Folgende Szenarien fehlen in der Spec:
+- `findDuplicates` — Prisma-Fehler (DB unreachable) → 500
+- `merge()` mit `masterId === duplicateId` → 400 `BadRequestException`
+- `merge()` mit unbekannter `masterId` → 404
 
 ---
 
 ## Quality-Gate
 
-- Lint: PASS (laut Session-4-Summary)
-- Typecheck: PASS (laut Session-4-Summary)
-- Unit: PASS (~98% API, 89.44% Web) — aber Error-Cases für `findDuplicates` fehlen
-- Integration: — (nicht vorhanden, erwartet ab Session 16a)
-- npm audit: — (nicht geprüft)
+| Check | Status | Anmerkung |
+|-------|--------|-----------|
+| Lint | PASS | Laut Session-4-Summary + Fix-Commit |
+| Typecheck | PASS | Keine tsc-Fehler durch die Fixes |
+| Unit (API) | PASS | ~98% Coverage — Error-Cases für `findDuplicates` und Self-Merge fehlen noch |
+| Unit (Web) | PASS | 89.44% Lines |
+| Integration | — | Erwartet ab Session 16a |
+| npm audit | — | Nicht re-run im Fix-Commit |
 
-## Positiv
+---
+
+## Positiv (unverändert gültig)
 
 - `$executeRaw` in `merge()` korrekt als tagged template parametrisiert — kein SQL-Injection-Risiko.
 - Partial Unique Index `emails[1] WHERE deletedAt IS NULL` — DSGVO-korrekt, erlaubt Re-Use nach Soft-Delete.
-- `deletedAt: null` konsequent in allen Prisma-Queries vorhanden (keine vergessene Filterung).
+- `deletedAt: null` konsequent in allen Prisma-Queries vorhanden.
 - `QueryContactsDto` mit `@Max(100)` auf `limit` — verhindert übermäßige Datenabfragen.
 - Merge-Transaktion via `$transaction` — FK-Updates und Soft-Delete atomar.
 - Kein direktes `fetch()` ohne Auth-Header im Frontend — zentrale `apiFetch`-Utility.
 
+---
+
 ## Entscheid
 
-- [ ] CLEAN — merge freigegeben
-- [x] FIXES REQUIRED — 3 BLOCKER vor Merge beheben (B1, B2, B3)
+- [x] CLEAN — **merge freigegeben** (0 BLOCKER)
+- [ ] FIXES REQUIRED
+
+**3 MAJOR als Tech-Debt** in CLAUDE.md aufnehmen (W1, W2, W3 → Sessions 5/15/16a).
