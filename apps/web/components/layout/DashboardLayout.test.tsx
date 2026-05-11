@@ -4,6 +4,7 @@ import { DashboardLayout } from './DashboardLayout';
 
 vi.mock('next/navigation', () => ({
   usePathname: vi.fn(() => '/pulse'),
+  useRouter: vi.fn(() => ({ push: vi.fn() })),
 }));
 
 vi.mock('next-auth/react', () => ({

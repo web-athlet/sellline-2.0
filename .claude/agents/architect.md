@@ -5,7 +5,7 @@ description: >
   Requirement-Analyse, technische Planung und Klärungsfragen. Ich schreibe
   KEINEN Produktionscode. Invokiere mich mit: "Analysiere Session N und erstelle
   einen Implementierungsplan" oder wenn Architektur-Entscheidungen nötig sind.
-model: claude-opus-4-7
+model: opus
 tools:
   - view
   - bash

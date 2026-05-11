@@ -5,7 +5,7 @@ description: >
   Qualitätsprüfung. Ich schreibe KEINEN Code und ändere KEINE Dateien außer
   Review-Docs. Starte mich in einer NEUEN Session mit /clear für isolierten
   Context. Tier 2 (light) mit Sonnet, Tier 3 (deep) mit Opus via /review-deep.
-model: claude-sonnet-4-6
+model: sonnet
 tools:
   - view
   - bash

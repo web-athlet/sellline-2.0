@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import {
   type LucideIcon,
@@ -51,6 +51,7 @@ export interface NavRailProps {
 
 export function NavRail({ inboxCount = 0, overdueCount = 0 }: NavRailProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const { data: session } = useSession();
   const { navExpanded, toggleNav } = useUIStore();
   const [hovered, setHovered] = useState(false);
@@ -180,11 +181,12 @@ export function NavRail({ inboxCount = 0, overdueCount = 0 }: NavRailProps) {
 
           <button
             type="button"
-            aria-label="Benachrichtigungen"
+            aria-label="Pulse-Feed öffnen"
+            onClick={() => router.push('/pulse')}
             className="w-full flex items-center gap-3 pl-[6px] pr-2 py-2 rounded-lg transition-colors border-l-4 border-transparent text-white/70 hover:bg-[#252F7A] hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-400"
           >
             <Bell size={20} strokeWidth={1.8} className="shrink-0" />
-            {isExpanded && <span className="text-sm">Benachrichtigungen</span>}
+            {isExpanded && <span className="text-sm">Pulse-Feed</span>}
           </button>
 
           {/* User Avatar + Dropdown */}

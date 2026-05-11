@@ -5,7 +5,7 @@ description: >
   Integration-Tests und Playwright E2E-Tests zu schreiben. Ich ändere KEINEN
   Source-Code — nur Test-Dateien. Invokiere mich mit: "Schreibe Tests für
   {Modul/Service}" oder nach Abschluss der Implementation einer Session.
-model: claude-sonnet-4-6
+model: sonnet
 tools:
   - view
   - bash
