@@ -168,9 +168,11 @@ export class ContactsService {
       ...activities.map((a) => ({ ...a, _type: 'activity' as const })),
       ...dealEmails.map((e) => ({ ...e, _type: 'email' as const })),
     ].sort((a, b) => {
-      const dateA = a._type === 'activity' ? (a.dueDate ?? a.createdAt) : a.sentAt;
-      const dateB = b._type === 'activity' ? (b.dueDate ?? b.createdAt) : b.sentAt;
-      return new Date(dateB).getTime() - new Date(dateA).getTime();
+      const getDate = (item: (typeof timeline)[number]): number => {
+        if (item._type === 'activity') return new Date(item.dueDate ?? item.createdAt).getTime();
+        return item.sentAt ? new Date(item.sentAt).getTime() : Date.now();
+      };
+      return getDate(b) - getDate(a);
     });
 
     return { data: timeline };
@@ -228,6 +230,7 @@ export class ContactsService {
     const persons = await this.prisma.person.findMany({
       where: { deletedAt: null },
       select: { id: true, firstName: true, lastName: true, emails: true },
+      take: 1000,
     });
 
     const pairs: Array<{
@@ -281,7 +284,7 @@ export class ContactsService {
       }),
       this.prisma.person.findFirst({
         where: { id: duplicateId, deletedAt: null },
-        select: { id: true },
+        select: { id: true, notes: true },
       }),
     ]);
 
@@ -299,12 +302,12 @@ export class ContactsService {
         where: { personId: duplicateId },
         data: { personId: masterId },
       }),
-      // Soft-delete duplicate with audit note
+      // Soft-delete duplicate, appending audit note to existing notes
       this.prisma.person.update({
         where: { id: duplicateId },
         data: {
           deletedAt: new Date(),
-          notes: `merged into ${masterId}`,
+          notes: [duplicate.notes, `merged into ${masterId}`].filter(Boolean).join('\n'),
         },
       }),
     ]);

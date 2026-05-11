@@ -137,7 +137,9 @@ describe('ContactsService', () => {
     });
 
     it('throws NotFoundException when master not found', async () => {
-      mockPrisma.person.findFirst.mockResolvedValueOnce(null).mockResolvedValueOnce({ id: 'dup' });
+      mockPrisma.person.findFirst
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce({ id: 'dup', notes: null });
       await expect(service.merge({ masterId: 'missing', duplicateId: 'dup' })).rejects.toThrow(
         NotFoundException,
       );
@@ -146,7 +148,7 @@ describe('ContactsService', () => {
     it('transfers activities and soft-deletes duplicate', async () => {
       mockPrisma.person.findFirst
         .mockResolvedValueOnce({ id: 'master' })
-        .mockResolvedValueOnce({ id: 'dup' });
+        .mockResolvedValueOnce({ id: 'dup', notes: null });
       mockPrisma.$transaction.mockResolvedValue([{}, {}, {}]);
       mockPrisma.$executeRaw.mockResolvedValue(0);
 
@@ -155,6 +157,27 @@ describe('ContactsService', () => {
       expect(result).toEqual({ success: true, masterId: 'master' });
       expect(mockPrisma.$transaction).toHaveBeenCalled();
       expect(mockPrisma.$executeRaw).toHaveBeenCalled();
+    });
+
+    it('appends merge note to existing notes of duplicate', async () => {
+      mockPrisma.person.findFirst
+        .mockResolvedValueOnce({ id: 'master' })
+        .mockResolvedValueOnce({ id: 'dup', notes: 'Existing note' });
+      mockPrisma.$transaction.mockImplementation((ops: unknown[]) => Promise.all(ops));
+      mockPrisma.activity.updateMany.mockResolvedValue({ count: 0 });
+      mockPrisma.campaignContact.updateMany.mockResolvedValue({ count: 0 });
+      mockPrisma.person.update.mockResolvedValue({ id: 'dup' });
+      mockPrisma.$executeRaw.mockResolvedValue(0);
+
+      await service.merge({ masterId: 'master', duplicateId: 'dup' });
+
+      expect(mockPrisma.person.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            notes: 'Existing note\nmerged into master',
+          }),
+        }),
+      );
     });
   });
 
