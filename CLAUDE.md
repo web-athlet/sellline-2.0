@@ -1,7 +1,7 @@
 # NextGen CRM — Claude Code Context
 
-> **v4.2** | Stand: 2026-05-10 | Aktive Session: Session 4 (M8 Kontakte) | Branch: feature/session-4-contacts
-> Letztes Update: 2026-05-10 (Session 3 Navigation / App-Shell)
+> **v4.3** | Stand: 2026-05-11 | Aktive Session: Session 5 (M3 Deals) | Branch: feature/session-5-deals
+> Letztes Update: 2026-05-11 (Session 4 M8 Kontakte & Organisationen)
 
 ## Mission
 AI-natives B2B-CRM mit 10 Modulen + 3 KI-Agenten. Orientiert an Pipedrive,
@@ -39,7 +39,7 @@ nextgen-crm/
 | 1 | DB-Schema + Prisma + Seed | ✅ | feature/session-1-db-schema | 11/11 |
 | 2 | Authentication (JWT, RBAC, 2FA, PW-Reset) | ✅ | feature/session-2-authentication | 10/10 |
 | 3 | Navigation / App-Shell | ✅ | feature/session-3-navigation | 10/10 |
-| 4 | M8 Kontakte | ⬜ | — | — |
+| 4 | M8 Kontakte & Organisationen | ✅ | feature/session-4-contacts | 5/5 |
 | 5 | M3 Deals — Kritischer Pfad | ⬜ | — | — |
 | 6 | M1 Pulse-Feed | ⬜ | — | — |
 | 7 | M7 Aktivitäten | ⬜ | — | — |
@@ -127,24 +127,25 @@ nextgen-crm/
    - T2/T3 Test-Coverage: Seed-Idempotenz + Disconnect-Order (Session 16a)
 10. **[Tech-Debt Session 3] Badge-Counts Placeholder** — `inboxCount`/`overdueCount` props in NavRail default 0. Echte API-Anbindung: Session 11 (Inbox) und Session 7 (Aktivitäten).
 11. **[Tech-Debt Session 3] Bell-Button ohne Handler** — Notifications-Bell hat keinen onClick. Geplant Session 6/7.
-12. **[Tech-Debt Session 3] `settings/security` ohne DashboardLayout** — Seite nutzt noch kein App-Shell-Layout. Refactoring in Session 4 oder eigenem PR.
+12. **[Tech-Debt Session 3] `settings/security` ohne DashboardLayout** — Seite nutzt noch kein App-Shell-Layout. Refactoring in Session 5 oder eigenem PR.
+13. **[Tech-Debt Session 4] `DuplicateMergePanel.tsx` 0% Test-Coverage** — Komplexes State-Management, geplant Session 16a.
+14. **[Tech-Debt Session 4] Detail-Tabs Placeholder** — `/contacts/[id]` Tabs Deals/Activities/Files/Emails zeigen Placeholder. Echte Anbindung: Sessions 5, 7, 11.
+15. **[Tech-Debt Session 4] "Neuer Kontakt"-Button löst `alert()` aus** — Modal-Implementierung verschoben auf Session 5.
 
 ---
 
 ## Aktuelle Session-Notizen
-<!-- Wird bei /session-end überschrieben. Enthält In-Progress-Details. -->
-Aktive Session: Session 4 (M8 Kontakte).
+Aktive Session: Session 5 (M3 Deals — Kritischer Pfad).
 
-**Voraussetzungen erfüllt (aus Session 3):**
-- `DashboardLayout` mit optionalem `sidebar`-Prop bereit (`components/layout/DashboardLayout.tsx`)
-- `/contacts`-Stub unter `app/(dashboard)/contacts/page.tsx` vorhanden
-- `useSession()` für RBAC-Guards, `apiFetch()` für HTTP-Aufrufe (beide aus Session 2)
-- Design-Tokens und Tailwind-Theme-Extension aus Session 3 verfügbar
+**Voraussetzungen erfüllt (aus Session 4):**
+- `GET /api/v1/contacts` für Participant-Autocomplete bereit
+- `GET /api/v1/organizations` für Deal-Org-Link bereit
+- `DashboardLayout`, `apiFetch()`, `useSession()`, Design-Tokens alle verfügbar
 
-**Session 3 abgeschlossen:** NavRail (60/220px), DashboardLayout, 10 Stub-Pages, Zustand-UIStore, Mobile Bottom-Nav + Sheet. 45 Web-Tests, 99.8% Coverage. Kein Schema-Delta, keine neuen Env-Vars.
-→ Details: [docs/20-sessions/session-03-summary.md](docs/20-sessions/session-03-summary.md)
+**Session 4 abgeschlossen:** ContactsModule + OrganizationsModule vollständig (CRUD, Timeline, Duplikat-Erkennung/Merge, Org-Hierarchie). Partial Unique Index auf `Person.emails[1]`. 159 API-Tests (~98%), 99 Web-Tests (89.44%). PR #6.
+→ Details: [docs/20-sessions/session-04-summary.md](docs/20-sessions/session-04-summary.md)
 
-**Tests:** 97 API-Tests (97% Coverage), 14 Web-Tests (100% Coverage).
+**Tests (kumulativ):** 159 API-Tests (~98% Coverage), 99 Web-Tests (89.44% Lines).
 
 ---
 
