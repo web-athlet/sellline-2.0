@@ -21,6 +21,7 @@ summary: "Vollstaendiger Index aller Second-Brain-Dokumente."
 | [session-03-summary.md](20-sessions/session-03-summary.md) | completed | NavRail (60/220px, Hover+Hamburger), DashboardLayout (3-Spalten), 10 Stub-Pages, Zustand-UIStore (persist), Mobile Bottom-Nav + Sheet. Pakete: lucide-react, zustand. 45 Web-Tests, 99.8% Coverage. 10/10 ACs. |
 | [session-04-summary.md](20-sessions/session-04-summary.md) | completed | M8 vollständig: Contacts/Orgs CRUD, Duplikat-Erkennung (fast-fuzzy, 0.85), Merge, Org-Hierarchie. 159 API-Tests (~98%), 99 Web-Tests (89.44%). 5/5 ACs. |
 | [session-05-summary.md](20-sessions/session-05-summary.md) | completed | M3 vollständig: Deals-Kanban (@dnd-kit), PipelinesModule, Pipeline-Value server-seitig, WS Pipeline-Room-Scoping, Closed-Deal-Guard. 200 API-Tests (~98%), 164 Web-Tests. 4/4 ACs. PRs #7+#8. |
+| [session-06-summary.md](20-sessions/session-06-summary.md) | completed | M1 Pulse-Feed vollstaendig: score-sortierter Daily-Feed (3 Tabs), Redis-Cache 30s TTL, WS User-Room, virtualisierte FeedList, Bell-Button-Fix. 222 API-Tests (~98%), 202 Web-Tests. 10/10 ACs. PR #9. |
 
 ## Reviews (30-reviews/)
 
@@ -35,7 +36,7 @@ summary: "Vollstaendiger Index aller Second-Brain-Dokumente."
 
 | Datei | Status | Summary |
 |---|---|---|
-| M1-pulse-feed.md | planned | Realtime Activity-Feed via Socket.io, KI-Sortierung (Score-Formel), Infinite Scroll, Redis-Cache 30s TTL. JWT im Handshake Pflicht. AC-010. |
+| M1-pulse-feed.md | implemented | Score-sortierter Daily-Feed (3 Tabs), Redis-Cache 30s TTL, WS User-Room per user:{userId}, virtualisierte FeedList. Session 6. |
 | M10-products.md | planned | Produktkatalog mit Preisen, Steuern, Waehrungen, Deal-Zuweisung mit Menge und Rabatt, Rechnungs-Frequenz. AC-009. |
 | M2-leads.md | planned | Embeddbare Webformulare, BullMQ Enrichment-Trigger, Lead-zu-Deal-Konvertierung. Form-Builder-Inputs per DOMPurify sanitisieren. AC-011,AC-016. |
 | M3-deals.md | planned | Kanban-Board mit @dnd-kit DnD, 6 Stages, Pipeline-Value server-seitig, Rot-Indikator, Ghosting-Flag. |

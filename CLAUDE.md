@@ -1,7 +1,7 @@
 # NextGen CRM — Claude Code Context
 
-> **v4.4** | Stand: 2026-05-11 | Aktive Session: Session 6 (M1 Pulse-Feed) | Branch: feature/session-6-pulse
-> Letztes Update: 2026-05-11 (Session 5 M3 Deals — Kritischer Pfad)
+> **v4.5** | Stand: 2026-05-12 | Aktive Session: Session 7 (M7 Aktivitäten) | Branch: feature/session-7-activities
+> Letztes Update: 2026-05-12 (Session 6 M1 Pulse-Feed — AI-Workspace)
 
 ## Mission
 AI-natives B2B-CRM mit 10 Modulen + 3 KI-Agenten. Orientiert an Pipedrive,
@@ -41,7 +41,7 @@ nextgen-crm/
 | 3 | Navigation / App-Shell | ✅ | feature/session-3-navigation | 10/10 |
 | 4 | M8 Kontakte & Organisationen | ✅ | feature/session-4-contacts | 5/5 |
 | 5 | M3 Deals — Kritischer Pfad | ✅ | feature/session-5-deals | 4/4 |
-| 6 | M1 Pulse-Feed | ⬜ | — | — |
+| 6 | M1 Pulse-Feed | ✅ | feature/session-6-pulse | 10/10 |
 | 7 | M7 Aktivitäten | ⬜ | — | — |
 | 8 | M2 Leads & Webformulare | ⬜ | — | — |
 | 9 | M10 Produktkatalog | ⬜ | — | — |
@@ -126,31 +126,35 @@ nextgen-crm/
    - A1 Singleton-Disconnect-Lifecycle fuer PrismaClient (Session 2 / PrismaService)
    - T2/T3 Test-Coverage: Seed-Idempotenz + Disconnect-Order (Session 16a)
 10. **[Tech-Debt Session 3] Badge-Counts Placeholder** — `inboxCount`/`overdueCount` props in NavRail default 0. Echte API-Anbindung: Session 11 (Inbox) und Session 7 (Aktivitäten).
-11. **[Tech-Debt Session 3] Bell-Button ohne Handler** — Notifications-Bell hat keinen onClick. Geplant Session 6/7.
+11. **[Done Session 6] Bell-Button ohne Handler** — Bell-Button in NavRail mit `router.push('/pulse')` verdrahtet.
 12. **[Tech-Debt Session 3] `settings/security` ohne DashboardLayout** — Seite nutzt noch kein App-Shell-Layout. Refactoring in Session 5 oder eigenem PR.
 13. **[Tech-Debt Session 4] `DuplicateMergePanel.tsx` 0% Test-Coverage** — Komplexes State-Management, geplant Session 16a.
 14. **[Tech-Debt Session 4] Detail-Tabs Placeholder** — `/contacts/[id]` Tabs Deals/Activities/Files/Emails zeigen Placeholder. Echte Anbindung: Sessions 5, 7, 11.
 15. **[Tech-Debt Session 4] "Neuer Kontakt"-Button löst `alert()` aus** — Modal-Implementierung verschoben auf Session 5.
 16. **[Tech-Debt Session 5] `deal-format.test.ts` nutzt echten System-Clock** — `new Date()` ohne Mock; fragile Tests. Geplant Session 16a.
 17. **[Tech-Debt Session 5] Index-Migration ohne `CONCURRENTLY`** — `20260511120000_deals_order_score_closing` enthält `CREATE INDEX` ohne `CONCURRENTLY`. Bei Prod-Migration manuell als separate Migration ausführen. Geplant Session 15.
-18. **[Tech-Debt Session 5] `providers.tsx` kein `staleTime`-Default** — WS-getriggerte Refetches entstehen (redundante HTTP-Calls nach jedem Deal-Event). Geplant Session 6 oder eigener PR.
+18. **[Tech-Debt Session 5/6] `providers.tsx` kein `staleTime`-Default** — WS-getriggerte Refetches entstehen (redundante HTTP-Calls nach jedem Event). Geplant Session 7 oder eigener PR.
 19. **[Tech-Debt Session 5] `pipeline:subscribe` prüft Org-Zugehörigkeit nicht** — akzeptabel bei Single-Tenant; muss bei Multi-Tenancy (Session 15) via `prisma.pipeline.findFirst({ where: { id, orgId } })` geschützt werden.
+20. **[Tech-Debt Session 6] Bell-Badge in NavRail nicht verdrahtet** — `GET /api/v1/pulse-feed/counts` bereit; Badge-Anbindung im NavRail geplant Session 7.
+21. **[Tech-Debt Session 6] FeedList ohne IntersectionObserver** — Infinite-Scroll nur über "Mehr laden"-Button, kein Auto-Trigger. Geplant Session 16a.
+22. **[Tech-Debt Session 6] RedisService ohne Circuit-Breaker** — fällt bei Verbindungsabbruch auf null/void zurück; kein dediziertes Circuit-Breaker-Pattern. Akzeptabel; Session 15.
 
 ---
 
 ## Aktuelle Session-Notizen
-Aktive Session: Session 6 (M1 Pulse-Feed).
+Aktive Session: Session 7 (M7 Aktivitäten).
 
-**Voraussetzungen erfüllt (aus Session 5):**
-- `EventsGateway` mit Pipeline-Room-Infra auf `main`
-- `GET /api/v1/deals/kanban` für Feed-Daten bereit
-- Bell-Button (Tech-Debt Session 3) wird in Session 6 adressiert
-- `DashboardLayout`, `apiFetch()`, `useSession()`, Design-Tokens alle verfügbar
+**Voraussetzungen erfüllt (aus Session 6):**
+- `PulseFeedService.invalidateForUser(userId)` public — direkt aufrufbar aus ActivitiesService
+- `EventsGateway.emitPulseFeedUpdated(userId, tab)` bereit
+- `GET /api/v1/pulse-feed/counts` bereit für NavRail-Badge-Anbindung
+- `user:{userId}` Room-Pattern etabliert für weitere WS-Events
+- Bell-Button-Tech-Debt (#11) behoben; `providers.tsx` staleTime-Default noch offen
 
-**Session 5 abgeschlossen:** DealsModule + PipelinesModule vollständig (Kanban, DnD, Pipeline-Value server-seitig, WS Pipeline-Room-Scoping, Closed-Deal-Guard). DB-Migration `20260511120000_deals_order_score_closing`. 200 API-Tests (~98%), 164 Web-Tests. PRs #7 + #8.
-→ Details: [docs/20-sessions/session-05-summary.md](docs/20-sessions/session-05-summary.md)
+**Session 6 abgeschlossen:** M1 Pulse-Feed vollständig (PulseFeedModule, RedisModule, score-sortierter Daily-Feed, 3 Tabs, WS User-Room, Pulse-Seite mit DayNav/TabBar/FeedList/FeedItem). Kein Schema-Change. PR #9.
+→ Details: [docs/20-sessions/session-06-summary.md](docs/20-sessions/session-06-summary.md)
 
-**Tests (kumulativ):** 200 API-Tests (~98% Coverage), 164 Web-Tests (~85% Lines).
+**Tests (kumulativ):** 222 API-Tests (~98% Coverage), 202 Web-Tests (~87% Lines).
 
 ---
 
