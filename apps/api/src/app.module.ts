@@ -8,6 +8,8 @@ import { HealthController } from './health.controller';
 import { MailModule } from './mail/mail.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
+import { ContactsModule } from './modules/contacts/contacts.module';
+import { OrganizationsModule } from './modules/organizations/organizations.module';
 import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
@@ -26,6 +28,8 @@ import { PrismaModule } from './prisma/prisma.module';
     MailModule,
     AuthModule,
     EventsModule,
+    ContactsModule,
+    OrganizationsModule,
   ],
   controllers: [HealthController],
   providers: [

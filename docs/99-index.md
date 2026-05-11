@@ -19,6 +19,7 @@ summary: "Vollstaendiger Index aller Second-Brain-Dokumente."
 | [session-01-summary.md](20-sessions/session-01-summary.md) | completed | Vollstaendiges Prisma-5-Schema (19 Models + 7 Enums + pgvector(1536)) in @nextgen/db plus idempotenter Seed (3 User, 1 Pipeline + 6 Stages, 10 Orgs, 20 Persons, 30 Deals, 50 Activities, 5 Products, 3 Projects + 15 Tasks, 1 Template). Initial-Migration deployed, Quality-Gate 10/10 PASS. |
 | [session-02-summary.md](20-sessions/session-02-summary.md) | completed | Vollstaendiges v3.0-Auth-System: JWT-15min + Refresh-Token-Family-Rotation mit Replay-Detection, TOTP-2FA (AES-256-GCM-encrypted), OAuth Google/Microsoft (feature-flagged), RBAC-Hierarchie, Rate-Limit 10/15min/IP, Password-Reset, NextAuth-Frontend. WS-JWT-Handshake schliesst Tech-Debt #1. 10/10 ACs, 97 API-Tests (97.1% Coverage), 14 Web-Tests (100%). |
 | [session-03-summary.md](20-sessions/session-03-summary.md) | completed | NavRail (60/220px, Hover+Hamburger), DashboardLayout (3-Spalten), 10 Stub-Pages, Zustand-UIStore (persist), Mobile Bottom-Nav + Sheet. Pakete: lucide-react, zustand. 45 Web-Tests, 99.8% Coverage. 10/10 ACs. |
+| [session-04-summary.md](20-sessions/session-04-summary.md) | completed | M8 vollständig: Contacts/Orgs CRUD, Duplikat-Erkennung (fast-fuzzy, 0.85), Merge, Org-Hierarchie. 159 API-Tests (~98%), 99 Web-Tests (89.44%). 5/5 ACs. |
 
 ## Reviews (30-reviews/)
 
@@ -39,7 +40,7 @@ summary: "Vollstaendiger Index aller Second-Brain-Dokumente."
 | M5-campaigns.md | planned | DSGVO-konformer Campaign-Versand, HMAC-Tracking-Tokens (kein UUID), Bounce-Handling, KI-Betreffzeilen via GPT-4o, opt_in-Pflicht-Check. AC-025,AC-029. |
 | M6-email.md | planned | Gmail-historyId-Sync, Outlook-Graph, AES-256-GCM E-Mail-Verschluesselung, KI-Thread-Summary, Smart-Reply. AC-007,AC-018. |
 | M7-activities.md | planned | Activity-Kalender mit DnD, Konflikt-Erkennung (Doppelbuchung), polymorphe Verknuepfung Deal/Person/Org. AC-006. |
-| M8-contacts.md | planned | Personen und Firmen mit Soft-Delete, Duplikat-Erkennung via fast-fuzzy, Unique-Constraint (email, deletedAt). |
+| M8-contacts.md | implemented | Personen und Firmen: CRUD, Timeline, Duplikat-Erkennung (fast-fuzzy, Threshold 0.85), Merge, Org-Hierarchie-Tree. Partial Unique Index. Session 4. |
 | M9-insights.md | planned | Dashboard-Builder (react-grid-layout, keine Kollision via verticalCompact), 8 Standard-Reports, KI-Verlust-Analyse woechentlich per Cron. AC-020. |
 
 ## Entscheidungen (ADRs) (40-decisions/)

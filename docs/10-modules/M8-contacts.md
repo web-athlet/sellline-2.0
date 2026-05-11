@@ -1,7 +1,7 @@
 ---
 title: "M8 — Kontakte (Persons & Companies)"
 tags: [module, kritischer-pfad, m8, contacts, persons, companies, fuzzy-search]
-status: planned
+status: implemented
 session: 4
 related: [M3-deals, M7-activities, M6-email, M5-campaigns]
 ac: [AC-008, AC-019]
