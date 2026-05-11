@@ -4,8 +4,26 @@
 > Reviewer: @reviewer (Tier 3, Opus 4.7) | Stand: Working Tree (uncommitted)
 
 **Status: FINDINGS — 4 BLOCKER, 5 HIGH, 6 MEDIUM, 4 LOW**
+**Status nach Verifikation (2026-05-11): 1 BLOCKER, 1 HIGH echt — 5 von 7 prioritären Findings waren FALSE POSITIVES.**
 
 **Recommendation: BLOCKED — must not merge until B1–B4 are resolved.**
+
+> ⚠️ **POST-REVIEW VERIFIKATION** (eingefügt 2026-05-11 auf `fix/session-5-security`):
+> Beim Implementieren der Fixes wurden die Findings gegen den realen Code verifiziert.
+> Der Reviewer-Agent hat **Code halluziniert** (claim: 1471-Zeilen-Service, real: 540).
+> Folgende Findings wurden als FALSE POSITIVE identifiziert und nicht „gefixt":
+>
+> | ID | Reviewer-Claim | Realität | Status |
+> |---|---|---|---|
+> | **B1** | `reorderDeals` IDOR ohne Owner-Check | Es gibt keinen `reorderDeals`-Endpoint. Reorder läuft via `changeStage` → `assertEditable` (Owner/Manager/Admin) und in `$transaction`. | ❌ FALSE POSITIVE |
+> | **B2** | `findDealOrThrow` ohne `deletedAt: null` | Methode existiert nicht. `findOne` (Z. 111) und `assertExists` (Z. 455) filtern beide korrekt `deletedAt: null`. | ❌ FALSE POSITIVE |
+> | **B3** | `snoozedUntil` akzeptiert past-dates | DTO hat `@IsInt @Min(1) @Max(365)` auf `days`; Server berechnet `until = now + days*86_400_000` — kann nie in der Vergangenheit liegen. `UpdateDealDto` exponiert `ghostingSnoozedUntil` nicht. | ❌ FALSE POSITIVE |
+> | **B4** | WS broadcastet `this.server.emit` an alle | Bestätigt — Zeilen 75–93. | ✅ ECHT (gefixt) |
+> | **H1** | Keine Pagination in `findAll` | `page=1, limit=50` (`@Max(500)`) bereits implementiert. | ❌ FALSE POSITIVE |
+> | **H2** | Reorder ohne `$transaction` | `changeStage` ist bereits in `prisma.$transaction(...)`. | ❌ FALSE POSITIVE |
+> | **H3** | Closed deals → Stage-Change möglich | Bestätigt — `changeStage` prüft `wonAt`/`lostAt` nicht. | ✅ ECHT (gefixt) |
+>
+> **Gefixt auf `fix/session-5-security`:** nur B4 (Pipeline-Room-Scoping + Subscribe/Unsubscribe) und H3 (`changeStage` lehnt geschlossene Deals ab). Die ursprünglichen Findings unten sind als Audit-Trail belassen.
 
 ---
 

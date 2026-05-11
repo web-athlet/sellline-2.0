@@ -230,6 +230,11 @@ export class DealsService {
 
   async changeStage(id: string, dto: ChangeStageDto, user: AuthenticatedUser) {
     const deal = await this.assertEditable(id, user);
+    if (deal.wonAt || deal.lostAt) {
+      throw new BadRequestException(
+        'Cannot change the stage of a closed deal — reopen it first via PATCH /deals/:id (clear won/lost).',
+      );
+    }
     await this.assertStageInPipeline(dto.stageId, deal.pipelineId);
 
     const oldStageId = deal.stageId;

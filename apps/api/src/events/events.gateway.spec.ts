@@ -18,6 +18,8 @@ const fakeSocket = (overrides: Partial<Socket> = {}): Socket =>
     handshake: overrides.handshake ?? { auth: {}, headers: {} },
     data: overrides.data ?? {},
     disconnect: overrides.disconnect ?? vi.fn(),
+    join: overrides.join ?? vi.fn(),
+    leave: overrides.leave ?? vi.fn(),
   }) as unknown as Socket;
 
 describe('EventsGateway', () => {
@@ -102,6 +104,98 @@ describe('EventsGateway', () => {
       });
       gateway.handleConnection(socket);
       expect(socket.data.user).toEqual({ id: 'u-2', email: 'x@y.z', role: 'ADMIN' });
+    });
+  });
+
+  describe('pipeline rooms', () => {
+    it('rejects pipeline:subscribe from an unauthenticated socket', () => {
+      const gateway = new EventsGateway(stubJwt());
+      const join = vi.fn();
+      const socket = fakeSocket({ join, data: {} } as Partial<Socket>);
+      const result = gateway.handlePipelineSubscribe({ pipelineId: 'p-1' }, socket);
+      expect(result.event).toBe('error');
+      expect(join).not.toHaveBeenCalled();
+    });
+
+    it('joins pipeline:<id> room on valid subscribe', () => {
+      const gateway = new EventsGateway(stubJwt());
+      const join = vi.fn();
+      const socket = fakeSocket({
+        join,
+        data: { user: { id: 'u-1', email: 'a@b', role: 'SALES_REP' } },
+      } as Partial<Socket>);
+      const result = gateway.handlePipelineSubscribe({ pipelineId: 'p-1' }, socket);
+      expect(result.event).toBe('pipeline:subscribed');
+      expect(join).toHaveBeenCalledWith('pipeline:p-1');
+    });
+
+    it('rejects invalid pipeline id payload', () => {
+      const gateway = new EventsGateway(stubJwt());
+      const join = vi.fn();
+      const socket = fakeSocket({
+        join,
+        data: { user: { id: 'u-1', email: 'a@b', role: 'SALES_REP' } },
+      } as Partial<Socket>);
+      const result = gateway.handlePipelineSubscribe(
+        { pipelineId: 123 as unknown as string },
+        socket,
+      );
+      expect(result.event).toBe('error');
+      expect(join).not.toHaveBeenCalled();
+    });
+
+    it('leaves the pipeline room on unsubscribe', () => {
+      const gateway = new EventsGateway(stubJwt());
+      const leave = vi.fn();
+      const socket = fakeSocket({
+        leave,
+        data: { user: { id: 'u-1', email: 'a@b', role: 'SALES_REP' } },
+      } as Partial<Socket>);
+      const result = gateway.handlePipelineUnsubscribe({ pipelineId: 'p-9' }, socket);
+      expect(result.event).toBe('pipeline:unsubscribed');
+      expect(leave).toHaveBeenCalledWith('pipeline:p-9');
+    });
+
+    it('emitDealCreated scopes broadcast to the deals pipeline room', () => {
+      const gateway = new EventsGateway(stubJwt());
+      const emit = vi.fn();
+      const to = vi.fn().mockReturnValue({ emit });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- minimal stub
+      (gateway as any).server = { to } as unknown;
+      gateway.emitDealCreated({
+        ts: 1,
+        userId: 'u-1',
+        dealId: 'd-1',
+        pipelineId: 'pipe-7',
+        stageId: 's-1',
+      });
+      expect(to).toHaveBeenCalledWith('pipeline:pipe-7');
+      expect(emit).toHaveBeenCalledWith(
+        'deal:created',
+        expect.objectContaining({ dealId: 'd-1', pipelineId: 'pipe-7' }),
+      );
+    });
+
+    it('emitDealStageChanged scopes broadcast to the deals pipeline room', () => {
+      const gateway = new EventsGateway(stubJwt());
+      const emit = vi.fn();
+      const to = vi.fn().mockReturnValue({ emit });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- minimal stub
+      (gateway as any).server = { to } as unknown;
+      gateway.emitDealStageChanged({
+        ts: 1,
+        userId: 'u-1',
+        dealId: 'd-1',
+        pipelineId: 'pipe-4',
+        oldStageId: 's-1',
+        newStageId: 's-2',
+        order: 0,
+      });
+      expect(to).toHaveBeenCalledWith('pipeline:pipe-4');
+      expect(emit).toHaveBeenCalledWith(
+        'deal:stage_changed',
+        expect.objectContaining({ order: 0 }),
+      );
     });
   });
 });

@@ -4,13 +4,19 @@ import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const socketHandlers = new Map<string, (...args: unknown[]) => void>();
+const onceHandlers = new Map<string, (...args: unknown[]) => void>();
 const mockSocket = {
   on: vi.fn((event: string, handler: (...args: unknown[]) => void) => {
     socketHandlers.set(event, handler);
   }),
   off: vi.fn((event: string) => {
     socketHandlers.delete(event);
+    onceHandlers.delete(event);
   }),
+  once: vi.fn((event: string, handler: (...args: unknown[]) => void) => {
+    onceHandlers.set(event, handler);
+  }),
+  emit: vi.fn(),
   connect: vi.fn(),
   connected: false,
 };
@@ -41,9 +47,13 @@ const makeWrapper = (qc: QueryClient) => {
 
 beforeEach(() => {
   socketHandlers.clear();
+  onceHandlers.clear();
   mockSocket.on.mockClear();
   mockSocket.off.mockClear();
+  mockSocket.once.mockClear();
+  mockSocket.emit.mockClear();
   mockSocket.connect.mockClear();
+  mockSocket.connected = false;
   getDealMock.mockReset();
 });
 
@@ -76,6 +86,28 @@ describe('useDealsSocket', () => {
     unmount();
     expect(mockSocket.off).toHaveBeenCalledWith('deal:created', expect.any(Function));
     expect(mockSocket.off).toHaveBeenCalledWith('deal:stage_changed', expect.any(Function));
+  });
+
+  it('subscribes to the pipeline room after connect', () => {
+    const qc = new QueryClient();
+    renderHook(() => useDealsSocket('pipe-1'), { wrapper: makeWrapper(qc) });
+    // socket starts disconnected → connect() called and subscribe deferred to "connect" event
+    expect(mockSocket.connect).toHaveBeenCalled();
+    expect(onceHandlers.has('connect')).toBe(true);
+    onceHandlers.get('connect')?.();
+    expect(mockSocket.emit).toHaveBeenCalledWith('pipeline:subscribe', { pipelineId: 'pipe-1' });
+  });
+
+  it('unsubscribes from the pipeline room on unmount when connected', () => {
+    const qc = new QueryClient();
+    mockSocket.connected = true;
+    const { unmount } = renderHook(() => useDealsSocket('pipe-1'), {
+      wrapper: makeWrapper(qc),
+    });
+    // Subscribe runs synchronously while connected
+    expect(mockSocket.emit).toHaveBeenCalledWith('pipeline:subscribe', { pipelineId: 'pipe-1' });
+    unmount();
+    expect(mockSocket.emit).toHaveBeenCalledWith('pipeline:unsubscribe', { pipelineId: 'pipe-1' });
   });
 
   it('removes detail cache and patches list on deal:deleted', () => {
