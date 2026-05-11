@@ -9,7 +9,9 @@ import { MailModule } from './mail/mail.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { ContactsModule } from './modules/contacts/contacts.module';
+import { DealsModule } from './modules/deals/deals.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
+import { PipelinesModule } from './modules/pipelines/pipelines.module';
 import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
@@ -30,6 +32,8 @@ import { PrismaModule } from './prisma/prisma.module';
     EventsModule,
     ContactsModule,
     OrganizationsModule,
+    PipelinesModule,
+    DealsModule,
   ],
   controllers: [HealthController],
   providers: [

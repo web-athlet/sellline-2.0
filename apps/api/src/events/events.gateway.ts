@@ -5,9 +5,18 @@ import {
   OnGatewayConnection,
   SubscribeMessage,
   WebSocketGateway,
+  WebSocketServer,
 } from '@nestjs/websockets';
-import type { PingPayload, PongPayload } from '@nextgen/types';
-import type { Socket } from 'socket.io';
+import type {
+  DealCreatedEvent,
+  DealDeletedEvent,
+  DealRotIndicatorEvent,
+  DealStageChangedEvent,
+  DealUpdatedEvent,
+  PingPayload,
+  PongPayload,
+} from '@nextgen/types';
+import type { Server, Socket } from 'socket.io';
 import type { AccessTokenPayload } from '../modules/auth/auth.types';
 
 const WEB_ORIGIN = process.env.NEXT_PUBLIC_WEB_URL ?? 'http://localhost:3000';
@@ -18,6 +27,9 @@ const WEB_ORIGIN = process.env.NEXT_PUBLIC_WEB_URL ?? 'http://localhost:3000';
 })
 export class EventsGateway implements OnGatewayConnection {
   private readonly logger = new Logger(EventsGateway.name);
+
+  @WebSocketServer()
+  server!: Server;
 
   constructor(private readonly jwt: JwtService) {}
 
@@ -58,5 +70,25 @@ export class EventsGateway implements OnGatewayConnection {
         ts: Date.now(),
       },
     };
+  }
+
+  emitDealCreated(payload: DealCreatedEvent): void {
+    this.server?.emit('deal:created', payload);
+  }
+
+  emitDealUpdated(payload: DealUpdatedEvent): void {
+    this.server?.emit('deal:updated', payload);
+  }
+
+  emitDealStageChanged(payload: DealStageChangedEvent): void {
+    this.server?.emit('deal:stage_changed', payload);
+  }
+
+  emitDealDeleted(payload: DealDeletedEvent): void {
+    this.server?.emit('deal:deleted', payload);
+  }
+
+  emitDealRotIndicator(payload: DealRotIndicatorEvent): void {
+    this.server?.emit('deal:rot_indicator', payload);
   }
 }

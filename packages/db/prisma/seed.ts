@@ -213,11 +213,15 @@ async function seedDeals(args: {
 }): Promise<string[]> {
   const { pipelineId, stageIds, orgIds, personIds, ownerIds } = args;
   const dealIds: string[] = [];
+  const perStageOrder = new Map<string, number>();
   for (let i = 0; i < 30; i++) {
     const dealId = id(`deal-${i}`);
     const stageIdx = i % stageIds.length;
+    const stageId = stageIds[stageIdx]!;
     const isWon = stageIdx === stageIds.length - 1;
     const closedAt = isWon ? new Date(now.getTime() - ((i % 30) + 1) * DAY_MS) : null;
+    const orderInStage = perStageOrder.get(stageId) ?? 0;
+    perStageOrder.set(stageId, orderInStage + 1);
 
     await prisma.deal.upsert({
       where: { id: dealId },
@@ -227,12 +231,15 @@ async function seedDeals(args: {
         title: `${faker.commerce.productName()} Deal`,
         value: faker.number.int({ min: 5000, max: 250000 }),
         currency: 'EUR',
-        stageId: stageIds[stageIdx]!,
+        stageId,
         pipelineId,
         ownerId: ownerIds[i % ownerIds.length]!,
         orgId: orgIds[i % orgIds.length]!,
         probability: stageIdx * 15,
         rotIndicator: i % 7 === 0,
+        score: Math.min(100, stageIdx * 18 + (i % 5) * 3),
+        order: orderInStage,
+        closingDate: new Date(now.getTime() + ((i % 30) + 7) * DAY_MS),
         closedAt,
         wonAt: isWon ? closedAt : null,
         participants: { connect: [{ id: personIds[i % personIds.length]! }] },
