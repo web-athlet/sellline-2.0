@@ -1,3 +1,4 @@
+import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
@@ -8,6 +9,8 @@ import { HealthController } from './health.controller';
 import { MailModule } from './mail/mail.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
+import { ActivitiesModule } from './modules/activities/activities.module';
+import { BookingModule } from './modules/booking/booking.module';
 import { ContactsModule } from './modules/contacts/contacts.module';
 import { DealsModule } from './modules/deals/deals.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
@@ -27,6 +30,11 @@ import { RedisModule } from './redis/redis.module';
       },
     }),
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 100 }]),
+    BullModule.forRoot({
+      connection: {
+        url: process.env.REDIS_URL ?? 'redis://localhost:6379',
+      },
+    }),
     PrismaModule,
     RedisModule,
     CryptoModule,
@@ -38,6 +46,8 @@ import { RedisModule } from './redis/redis.module';
     PipelinesModule,
     DealsModule,
     PulseFeedModule,
+    ActivitiesModule,
+    BookingModule,
   ],
   controllers: [HealthController],
   providers: [

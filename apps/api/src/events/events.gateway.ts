@@ -9,6 +9,9 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import type {
+  ActivityCompletedEvent,
+  ActivityCreatedEvent,
+  ActivityUpdatedEvent,
   DealCreatedEvent,
   DealDeletedEvent,
   DealRotIndicatorEvent,
@@ -137,5 +140,17 @@ export class EventsGateway implements OnGatewayConnection {
   emitPulseFeedUpdated(userId: string, tab: PulseFeedUpdatedEvent['tab']): void {
     const payload: PulseFeedUpdatedEvent = { userId, tab, ts: Date.now() };
     this.server?.to(USER_ROOM(userId)).emit('pulse:feed_updated', payload);
+  }
+
+  emitActivityCompleted(payload: ActivityCompletedEvent): void {
+    this.server?.to(USER_ROOM(payload.userId)).emit('activity:completed', payload);
+  }
+
+  emitActivityCreated(payload: ActivityCreatedEvent): void {
+    this.server?.to(USER_ROOM(payload.userId)).emit('activity:created', payload);
+  }
+
+  emitActivityUpdated(payload: ActivityUpdatedEvent): void {
+    this.server?.to(USER_ROOM(payload.userId)).emit('activity:updated', payload);
   }
 }

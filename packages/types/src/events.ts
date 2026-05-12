@@ -64,3 +64,28 @@ export interface PulseFeedUpdatedEvent {
   tab: 'followups' | 'missed' | 'opportunities' | null;
   ts: number;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Activity events — emitted per-user after activity mutations.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface ActivityCompletedEvent {
+  userId: string;
+  activityId: string;
+  dealId: string | null;
+  ts: number;
+}
+
+export interface ActivityCreatedEvent {
+  userId: string;
+  activityId: string;
+  dealId: string | null;
+  ts: number;
+}
+
+export interface ActivityUpdatedEvent {
+  userId: string;
+  activityId: string;
+  dealId: string | null;
+  ts: number;
+}
