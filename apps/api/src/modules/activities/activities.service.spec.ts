@@ -12,6 +12,7 @@ const makeUser = (overrides = {}) => ({
   id: 'user-1',
   email: 'sales@test.de',
   role: Role.SALES_REP,
+  twoFactorEnabled: false,
   ...overrides,
 });
 
@@ -209,21 +210,87 @@ describe('ActivitiesService', () => {
   // ── date filter ───────────────────────────────────────────────────────────
 
   describe('findAll date filters', () => {
-    it('todo filter returns done:false with gte dueDate', async () => {
-      prismaMock.$transaction.mockImplementation(async (ops: unknown[]) => {
-        const results = await Promise.all(ops.map((op) => op as Promise<unknown>));
-        return results;
-      });
+    function setupFindAllMocks() {
+      prismaMock.$transaction.mockImplementation(async (ops: unknown[]) =>
+        Promise.all(ops.map((op) => op as Promise<unknown>)),
+      );
       prismaMock.activity.count.mockResolvedValue(0);
       prismaMock.activity.findMany.mockResolvedValue([]);
+    }
 
+    it('todo filter returns done:false with gte dueDate', async () => {
+      setupFindAllMocks();
       await service.findAll({ filter: ActivityFilter.TODO });
-
       expect(prismaMock.activity.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
             done: false,
             dueDate: expect.objectContaining({ gte: expect.any(Date) }),
+          }),
+        }),
+      );
+    });
+
+    it('overdue filter returns done:false with lt dueDate', async () => {
+      setupFindAllMocks();
+      await service.findAll({ filter: ActivityFilter.OVERDUE });
+      expect(prismaMock.activity.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            done: false,
+            dueDate: expect.objectContaining({ lt: expect.any(Date) }),
+          }),
+        }),
+      );
+    });
+
+    it('today filter returns dueDate between todayStart and todayEnd', async () => {
+      setupFindAllMocks();
+      await service.findAll({ filter: ActivityFilter.TODAY });
+      expect(prismaMock.activity.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            dueDate: expect.objectContaining({ gte: expect.any(Date), lte: expect.any(Date) }),
+          }),
+        }),
+      );
+    });
+
+    it('this_week filter returns dueDate within current week', async () => {
+      setupFindAllMocks();
+      await service.findAll({ filter: ActivityFilter.THIS_WEEK });
+      expect(prismaMock.activity.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            dueDate: expect.objectContaining({ gte: expect.any(Date), lte: expect.any(Date) }),
+          }),
+        }),
+      );
+    });
+
+    it('next_week filter returns dueDate within next week', async () => {
+      setupFindAllMocks();
+      await service.findAll({ filter: ActivityFilter.NEXT_WEEK });
+      expect(prismaMock.activity.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            dueDate: expect.objectContaining({ gte: expect.any(Date), lte: expect.any(Date) }),
+          }),
+        }),
+      );
+    });
+
+    it('range filter with from+to returns bounded dueDate filter', async () => {
+      setupFindAllMocks();
+      await service.findAll({
+        filter: ActivityFilter.RANGE,
+        from: '2026-05-01',
+        to: '2026-05-31',
+      });
+      expect(prismaMock.activity.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            dueDate: expect.objectContaining({ gte: expect.any(Date), lte: expect.any(Date) }),
           }),
         }),
       );

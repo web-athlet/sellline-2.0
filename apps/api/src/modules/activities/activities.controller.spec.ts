@@ -3,7 +3,12 @@ import { ActivityType, Role } from '@nextgen/db';
 import { ActivitiesController } from './activities.controller';
 import { ActivitiesService } from './activities.service';
 
-const makeUser = () => ({ id: 'user-1', email: 'sales@test.de', role: Role.SALES_REP });
+const makeUser = () => ({
+  id: 'user-1',
+  email: 'sales@test.de',
+  role: Role.SALES_REP,
+  twoFactorEnabled: false,
+});
 
 const serviceMock = {
   findAll: vi

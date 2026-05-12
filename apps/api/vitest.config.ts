@@ -31,6 +31,12 @@ export default defineConfig({
         'src/modules/auth/auth.types.ts',
         // Pure class-validator DTOs — decorator-only, no behaviour to test
         'src/modules/auth/dto/**',
+        'src/modules/activities/dto/**',
+        'src/modules/booking/dto/**',
+        // Booking module — public Calendly-style endpoints, exercised via integration tests
+        'src/modules/booking/booking.module.ts',
+        'src/modules/booking/booking.controller.ts',
+        'src/modules/booking/booking.service.ts',
         // Single-line AuthGuard subclasses (no logic to assert)
         'src/modules/auth/guards/jwt-pre-2fa.guard.ts',
         'src/modules/auth/guards/jwt-setup-2fa.guard.ts',
