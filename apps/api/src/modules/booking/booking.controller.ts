@@ -9,6 +9,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { Public } from '../auth/decorators/public.decorator';
 import { AuthenticatedUser, CurrentUser } from '../auth/decorators/current-user.decorator';
 import { BookingService } from './booking.service';
@@ -36,18 +37,21 @@ export class BookingController {
   }
 
   @Public()
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
   @Get('public/:slug')
   getPublicProfile(@Param('slug') slug: string) {
     return this.booking.getPublicProfile(slug);
   }
 
   @Public()
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
   @Get('public/:slug/slots')
   getAvailableSlots(@Param('slug') slug: string, @Query('date') date: string) {
     return this.booking.getAvailableSlots(slug, date);
   }
 
   @Public()
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('public/:slug/book')
   @HttpCode(HttpStatus.CREATED)
   createBooking(@Param('slug') slug: string, @Body() dto: CreateBookingDto) {

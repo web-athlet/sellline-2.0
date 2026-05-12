@@ -39,8 +39,8 @@ export class ActivitiesController {
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.activities.findOne(id);
+  findOne(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.activities.findOne(id, user);
   }
 
   @Patch(':id')

@@ -543,17 +543,20 @@ model AIInsight {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model BookingConfig {
-  id           String   @id @default(uuid())
-  userId       String   @unique
-  slotDuration Int      @default(30)
-  workdayStart Int      @default(9)
-  workdayEnd   Int      @default(17)
-  timezone     String   @default("Europe/Berlin")
-  activeDays   Int[]    @default([1, 2, 3, 4, 5])
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id           String    @id @default(uuid())
+  userId       String    @unique
+  slotDuration Int       @default(30)
+  workdayStart Int       @default(9)
+  workdayEnd   Int       @default(17)
+  timezone     String    @default("Europe/Berlin")
+  activeDays   Int[]     @default([1, 2, 3, 4, 5])
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
 
   user User @relation(fields: [userId], references: [id])
+
+  @@index([deletedAt])
 }
 
 model AuditLog {

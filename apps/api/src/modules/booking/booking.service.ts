@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ActivityType } from '@nextgen/db';
 import { PrismaService } from '../../prisma/prisma.service';
 import type { AuthenticatedUser } from '../auth/decorators/current-user.decorator';
@@ -15,12 +15,16 @@ const DEFAULT_CONFIG = {
 
 @Injectable()
 export class BookingService {
+  private readonly logger = new Logger(BookingService.name);
+
   constructor(private readonly prisma: PrismaService) {}
 
   async getConfig(user: AuthenticatedUser) {
-    const config = await this.prisma.bookingConfig.findUnique({ where: { userId: user.id } });
+    const config = await this.prisma.bookingConfig.findFirst({
+      where: { userId: user.id, deletedAt: null },
+    });
     const userData = await this.prisma.user.findFirst({
-      where: { id: user.id },
+      where: { id: user.id, deletedAt: null },
       select: { bookingSlug: true, name: true },
     });
     return {
@@ -55,7 +59,7 @@ export class BookingService {
 
   async generateSlug(user: AuthenticatedUser) {
     const existing = await this.prisma.user.findFirst({
-      where: { id: user.id },
+      where: { id: user.id, deletedAt: null },
       select: { bookingSlug: true, name: true },
     });
     if (existing?.bookingSlug) {
@@ -76,7 +80,9 @@ export class BookingService {
       select: { id: true, name: true, avatarUrl: true },
     });
     if (!user) throw new NotFoundException(`Booking page not found`);
-    const config = await this.prisma.bookingConfig.findUnique({ where: { userId: user.id } });
+    const config = await this.prisma.bookingConfig.findFirst({
+      where: { userId: user.id, deletedAt: null },
+    });
     return {
       userId: user.id,
       name: user.name,
@@ -95,10 +101,11 @@ export class BookingService {
     });
     if (!user) throw new NotFoundException(`Booking page not found`);
 
-    const config = await this.prisma.bookingConfig.findUnique({ where: { userId: user.id } });
+    const config = await this.prisma.bookingConfig.findFirst({
+      where: { userId: user.id, deletedAt: null },
+    });
     const cfg = config ?? DEFAULT_CONFIG;
 
-    // Check if date is an active weekday (0=Sun, 1=Mon … 6=Sat)
     const dayOfWeek = date.getDay();
     if (!(cfg.activeDays as number[]).includes(dayOfWeek)) return { slots: [] };
 
@@ -107,7 +114,6 @@ export class BookingService {
     const dayEnd = new Date(date);
     dayEnd.setHours(cfg.workdayEnd, 0, 0, 0);
 
-    // Existing meetings on that day
     const existing = await this.prisma.activity.findMany({
       where: {
         assigneeId: user.id,
@@ -147,38 +153,44 @@ export class BookingService {
     if (!user) throw new NotFoundException(`Booking page not found`);
 
     const start = new Date(dto.startTime);
-    const config = await this.prisma.bookingConfig.findUnique({ where: { userId: user.id } });
+    const config = await this.prisma.bookingConfig.findFirst({
+      where: { userId: user.id, deletedAt: null },
+    });
     const duration = (config?.slotDuration ?? 30) * 60_000;
     const end = new Date(start.getTime() + duration);
 
-    // Check for conflicts before booking
-    const conflict = await this.prisma.activity.findFirst({
-      where: {
-        assigneeId: user.id,
-        type: ActivityType.MEETING,
-        done: false,
-        deletedAt: null,
-        AND: [{ startTime: { lt: end } }, { endTime: { gt: start } }],
-      },
-      select: { id: true },
-    });
-    if (conflict) throw new BadRequestException('Der gewählte Slot ist nicht mehr verfügbar');
+    // W-1: atomic conflict check + create to prevent TOCTOU race
+    const activity = await this.prisma.$transaction(async (tx) => {
+      const conflict = await tx.activity.findFirst({
+        where: {
+          assigneeId: user.id,
+          type: ActivityType.MEETING,
+          done: false,
+          deletedAt: null,
+          AND: [{ startTime: { lt: end } }, { endTime: { gt: start } }],
+        },
+        select: { id: true },
+      });
+      if (conflict) throw new BadRequestException('Der gewählte Slot ist nicht mehr verfügbar');
 
-    const activity = await this.prisma.activity.create({
-      data: {
-        type: ActivityType.MEETING,
-        subject: dto.subject,
-        notes: dto.guestNotes
-          ? `Gebucht von: ${dto.guestName} (${dto.guestEmail})\n${dto.guestNotes}`
-          : `Gebucht von: ${dto.guestName} (${dto.guestEmail})`,
-        startTime: start,
-        endTime: end,
-        dueDate: start,
-        assigneeId: user.id,
-      },
-      select: { id: true, subject: true, startTime: true, endTime: true },
+      return tx.activity.create({
+        data: {
+          type: ActivityType.MEETING,
+          subject: dto.subject,
+          notes: dto.guestNotes
+            ? `Gebucht von: ${dto.guestName} (${dto.guestEmail})\n${dto.guestNotes}`
+            : `Gebucht von: ${dto.guestName} (${dto.guestEmail})`,
+          startTime: start,
+          endTime: end,
+          dueDate: start,
+          assigneeId: user.id,
+        },
+        select: { id: true, subject: true, startTime: true, endTime: true },
+      });
     });
 
+    // W-3: log without PII
+    this.logger.log({ msg: 'booking.created', activityId: activity.id, userId: user.id });
     return { activityId: activity.id, startTime: activity.startTime, endTime: activity.endTime };
   }
 }

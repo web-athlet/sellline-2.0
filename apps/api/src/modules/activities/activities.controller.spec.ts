@@ -53,9 +53,9 @@ describe('ActivitiesController', () => {
     expect(serviceMock.create).toHaveBeenCalledWith(dto, makeUser());
   });
 
-  it('findOne delegates to service', async () => {
-    await controller.findOne('act-1');
-    expect(serviceMock.findOne).toHaveBeenCalledWith('act-1');
+  it('findOne delegates to service with user', async () => {
+    await controller.findOne('act-1', makeUser());
+    expect(serviceMock.findOne).toHaveBeenCalledWith('act-1', makeUser());
   });
 
   it('markDone delegates to service', async () => {

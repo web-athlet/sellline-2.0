@@ -84,15 +84,38 @@ describe('ActivitiesService', () => {
   // ── findOne ──────────────────────────────────────────────────────────────
 
   describe('findOne', () => {
-    it('returns activity when found', async () => {
+    it('returns activity when found and user is assignee', async () => {
       const act = makeActivity();
       prismaMock.activity.findFirst.mockResolvedValue(act);
-      await expect(service.findOne('act-1')).resolves.toEqual(act);
+      await expect(service.findOne('act-1', makeUser())).resolves.toEqual(act);
     });
 
     it('throws NotFoundException when not found', async () => {
       prismaMock.activity.findFirst.mockResolvedValue(null);
-      await expect(service.findOne('missing')).rejects.toThrow(NotFoundException);
+      await expect(service.findOne('missing', makeUser())).rejects.toThrow(NotFoundException);
+    });
+
+    it('throws ForbiddenException when SALES_REP is not the assignee', async () => {
+      prismaMock.activity.findFirst.mockResolvedValue(makeActivity({ assigneeId: 'someone-else' }));
+      await expect(
+        service.findOne('act-1', makeUser({ id: 'other', role: Role.SALES_REP })),
+      ).rejects.toThrow(ForbiddenException);
+    });
+
+    it('allows MANAGER to view any activity', async () => {
+      const act = makeActivity({ assigneeId: 'someone-else' });
+      prismaMock.activity.findFirst.mockResolvedValue(act);
+      await expect(
+        service.findOne('act-1', makeUser({ id: 'mgr', role: Role.MANAGER })),
+      ).resolves.toEqual(act);
+    });
+
+    it('allows ADMIN to view any activity', async () => {
+      const act = makeActivity({ assigneeId: 'someone-else' });
+      prismaMock.activity.findFirst.mockResolvedValue(act);
+      await expect(
+        service.findOne('act-1', makeUser({ id: 'adm', role: Role.ADMIN })),
+      ).resolves.toEqual(act);
     });
   });
 

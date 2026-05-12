@@ -83,12 +83,19 @@ export class ActivitiesService {
     };
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, user: AuthenticatedUser) {
     const activity = await this.prisma.activity.findFirst({
       where: { id, deletedAt: null },
       select: ACTIVITY_SELECT,
     });
     if (!activity) throw new NotFoundException(`Activity ${id} not found`);
+    const canView =
+      activity.assigneeId === user.id || user.role === Role.ADMIN || user.role === Role.MANAGER;
+    if (!canView) {
+      throw new ForbiddenException(
+        'Only the assignee, a manager, or an admin can view this activity',
+      );
+    }
     return activity;
   }
 
