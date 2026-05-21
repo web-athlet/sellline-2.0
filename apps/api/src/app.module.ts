@@ -17,6 +17,7 @@ import { FormsModule } from './modules/forms/forms.module';
 import { LeadsModule } from './modules/leads/leads.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
 import { ProductsModule } from './modules/products/products.module';
+import { ProjectsModule } from './modules/projects/projects.module';
 import { PipelinesModule } from './modules/pipelines/pipelines.module';
 import { PulseFeedModule } from './modules/pulse-feed/pulse-feed.module';
 import { PublicModule } from './modules/public/public.module';
@@ -56,6 +57,7 @@ import { RedisModule } from './redis/redis.module';
     LeadsModule,
     PublicModule,
     ProductsModule,
+    ProjectsModule,
   ],
   controllers: [HealthController],
   providers: [
