@@ -298,6 +298,40 @@ async function seedProjectsAndTemplate(dealIds: string[]): Promise<void> {
     },
   });
 
+  await prisma.projectTemplate.upsert({
+    where: { id: id('template-saas') },
+    update: { name: 'SaaS-Onboarding', emoji: '☁️' },
+    create: {
+      id: id('template-saas'),
+      name: 'SaaS-Onboarding',
+      emoji: '☁️',
+      tasksJson: [
+        { title: 'Vertragsunterzeichnung', relativeDueDays: 0 },
+        { title: 'Account-Setup & Konfiguration', relativeDueDays: 3 },
+        { title: 'Schulung & Training', relativeDueDays: 10 },
+        { title: 'Go-Live', relativeDueDays: 14 },
+      ],
+    },
+  });
+
+  await prisma.projectTemplate.upsert({
+    where: { id: id('template-custom') },
+    update: { name: 'Custom Integration', emoji: '🔌' },
+    create: {
+      id: id('template-custom'),
+      name: 'Custom Integration',
+      emoji: '🔌',
+      tasksJson: [
+        { title: 'Anforderungsanalyse', relativeDueDays: 2 },
+        { title: 'Technisches Design & Architektur', relativeDueDays: 7 },
+        { title: 'Entwicklung Phase 1', relativeDueDays: 21 },
+        { title: 'Entwicklung Phase 2', relativeDueDays: 35 },
+        { title: 'Integrationstests', relativeDueDays: 42 },
+        { title: 'Abnahme & Deployment', relativeDueDays: 49 },
+      ],
+    },
+  });
+
   const statuses = [ProjectStatus.KICKOFF, ProjectStatus.IMPLEMENTATION, ProjectStatus.REVIEW];
   const emojis = ['🚀', '⚙️', '📊'];
 

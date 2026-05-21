@@ -1,7 +1,7 @@
 # NextGen CRM — Claude Code Context
 
-> **v4.8** | Stand: 2026-05-21 | Aktive Session: Session 10 (M4 Projekte) | Branch: —
-> Letztes Update: 2026-05-21 (Session 9 M10 Produktkatalog — vollständig)
+> **v4.9** | Stand: 2026-05-21 | Aktive Session: Session 11 (M6 E-Mail-Sync) | Branch: —
+> Letztes Update: 2026-05-21 (Session 10 M4 Projekte — vollständig)
 
 ## Mission
 AI-natives B2B-CRM mit 10 Modulen + 3 KI-Agenten. Orientiert an Pipedrive,
@@ -45,7 +45,7 @@ nextgen-crm/
 | 7 | M7 Aktivitäten + BookingModule | ✅ | feature/session-7-activities | 14/14 |
 | 8 | M2 Leads & Webformulare | ✅ | feature/session-8-leads | 6/6 |
 | 9 | M10 Produktkatalog | ✅ | feature/session-9-products | 4/4 |
-| 10 | M4 Projekte | ⬜ | — | — |
+| 10 | M4 Projekte | ✅ | feature/session-10-projects | 4/4 |
 | 11 | M6 E-Mail-Sync — Kritischer Pfad | ⬜ | — | — |
 | 12 | M5 E-Mail-Campaigns | ⬜ | — | — |
 | 13 | M9 Insights & Analytics | ⬜ | — | — |
@@ -112,7 +112,7 @@ nextgen-crm/
 2. **[Tech-Debt] Audit-Threshold auf `critical`** — Next.js 14.2.x CVE (GHSA-q4gf-8mx6-v5v3 DoS via Server Components). Wartet auf Next-15-Migration in Session 15. Threshold danach zurück auf `high`.
 3. **[Tech-Debt] `vitest.workspace.ts` entfernt** — Pro-Package Coverage via Turbo; Quality-Gate-Regex matcht mehrere "All files"-Zeilen.
 4. **[Info] `docs/.obsidian/` in `.gitignore`** — lokaler Editor-State, kein Repo-Inhalt.
-5. **[Tech-Debt] Bare-FK-Spalten ohne Prisma-Relation** — `Email.userId` und `Task.assigneeId` sind plain `String`/`String?` ohne `@relation` (spec-treu). Kein FK-Constraint auf DB-Ebene. Tightening: `Email.userId` in Session 11 (E-Mail-Sync), `Task.assigneeId` in Session 10 (Projects). Kein BLOCKER.
+5. **[Done Session 10] Bare-FK-Spalten ohne Prisma-Relation** — `Task.assigneeId` FK-Constraint via Migration `20260521120000_task_assignee_fk` ergänzt (ON DELETE SET NULL). `Email.userId` bleibt offen bis Session 11 (E-Mail-Sync).
 6. **[Tech-Debt] `migrate dev` nur interaktiv** — Tool-Harness ohne TTY musste auf `prisma migrate diff --from-empty --to-schema-datamodel ... --script` + `prisma migrate deploy` ausweichen. Lokale Entwickler nutzen weiter `pnpm --filter @nextgen/db prisma:migrate` interaktiv. SQL-Output identisch. Kein BLOCKER. Hinweis: Gleiches Verfahren im Security-Fix-Branch (`fix/session-1-security`) erneut angewendet — `migration_lock.toml` musste manuell erstellt werden, da es im initialen Commit fehlte (`prisma migrate dev` haette es automatisch erzeugt).
 7. **[Doc-Lücke] `.env`-Bootstrap fehlt im Onboarding** — `.env` ist gitignored und im Repo nicht vorhanden; muss vor erstem `prisma:migrate` via `cp .env.example .env` erstellt werden. Sollte ins zukünftige `docs/50-runbooks/local-dev-setup.md` aufgenommen werden.
 8. **[Done] Tier-3 Deep-Review Session 1** — 4 BLOCKER: 2 echte (S1 bcrypt cost 10→12 in `seed.ts:73`; S4 NODE_ENV-Prod-Seed-Guard mit `exit 1`, override via `SEED_ALLOW_PROD=1`), 1 partial-FP (S3 `revokedAt` war da, `replacedByToken String?` fehlte — ergaenzt), 1 FP (S2 `tokenHash` war bereits implementiert). Fix-Branch: `fix/session-1-security`. Migration: `20260509170000_add_refresh_token_replaced_by`. Quality-Gate gruen (typecheck PASS, lint PASS, vitest 3/3 PASS). Review-Dokument: `docs/30-reviews/session-1-deep-review.md`.
@@ -149,22 +149,26 @@ nextgen-crm/
 30. **[Tech-Debt Session 8] HTML-Attribut-Injection im Embed-Snippet** — `form.name` wird unescaped in `title="${form.name}"` interpoliert (`forms.service.ts:98`). Fix: vor Interpolation escapen (`replace(/"/g, '&quot;')`). Geplant Session 15.
 31. **[Tech-Debt Session 8] Fehlende `@Roles()` auf LeadsController-Mutationen** — `convert`, `reEnqueue` und `delete` in `leads.controller.ts` haben kein Rollen-Guard; jeder Auth-User kann Leads mutieren (vs. ADMIN/MANAGER bei FormsController). Geplant Session 15.
 32. **[Tech-Debt Session 9] Web functions-Schwellwert auf 64% gesenkt** — V8 zählt JSX-Inline-Arrows als Functions; DealProductsTab Mutation-Handler inflationieren Denominator. Threshold war 65%, jetzt 64%. Review in Session 16a.
+33. **[Tech-Debt Session 10] `projects/dto/**` aus API-Coverage ausgeschlossen** — class-validator DTOs ohne testbares Verhalten, analog zu `auth/dto`. Geplant Session 16a.
+34. **[Tech-Debt Session 10] `testTimeout: 30_000` in vitest.config.ts** — bcrypt cost-12 unter paralleler Turbo-Last übersteigt 5000ms Default. Verhindert flaky timeouts; kein funktionales Problem.
+35. **[Tech-Debt Session 10] ProjectKanban ohne order-Feld** — DnD ändert nur Status, keine Reihenfolge innerhalb einer Spalte. Project-Model hat kein `order`-Feld. Erweiterung in Session 16a möglich.
+36. **[Tech-Debt Session 10] Global Tasks `/tasks` Client-seitige Datumsfilterung** — Filter 'today'/'week' nutzen Browser-Timezone via `isSameDay()`/`isThisWeek()`. Serverseitige Filterung für konsistentes Verhalten geplant Session 16a.
 
 ---
 
 ## Aktuelle Session-Notizen
-Aktive Session: Session 10 (M4 Projekte).
+Aktive Session: Session 11 (M6 E-Mail-Sync — Kritischer Pfad).
 
-**Voraussetzungen erfüllt (aus Session 9):**
-- ProductsModule vollständig: `/api/v1/products` (CRUD + CSV-Streaming-Import, Papaparse step/pause/resume)
-- DealProductsTab in Deal-Detail eingebunden; `recomputeDealValue` via Query-Invalidierung (AC-009 ✅)
-- ImportCsvModal: CSV-Preview + ImportResult mit Fehler-Liste; max 5000 Zeilen
-- Web-Functions-Schwellwert auf 64% gesenkt (Tech-Debt #32)
+**Voraussetzungen erfüllt (aus Session 10):**
+- ProjectsModule + TasksModule vollständig: 12 Endpoints, Kanban-Board, Template-Instantiierung
+- Task.assigneeId FK-Constraint migriert (Tech-Debt #5 erledigt)
+- Globale Tasks-Seite `/tasks` mit 4 Filtern
+- Tech-Debts #33-36 dokumentiert
 
-**Session 9 abgeschlossen:** M10 Produktkatalog vollständig. 4/4 ACs. PR #12 (81a3011).
-→ Details: [docs/20-sessions/session-09-summary.md](docs/20-sessions/session-09-summary.md)
+**Session 10 abgeschlossen:** M4 Projekte vollständig. 4/4 ACs. PR #13.
+→ Details: [docs/20-sessions/session-10-summary.md](docs/20-sessions/session-10-summary.md)
 
-**Tests (kumulativ):** 325 API-Tests (86.93% Stmt / 80.62% Branch), 371 Web-Tests (88.25% Stmt / 82.41% Branch). Gesamt: 696 Tests.
+**Tests (kumulativ):** ~357 API-Tests (~87% Stmt / ~81% Branch), ~426 Web-Tests (~88% Stmt / ~83% Branch). Gesamt: ~783 Tests.
 
 ---
 

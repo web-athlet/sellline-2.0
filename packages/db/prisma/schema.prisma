@@ -39,6 +39,7 @@ model User {
 
   ownedDeals     Deal[]          @relation("DealOwner")
   activities     Activity[]
+  assignedTasks  Task[]
   campaignSender Campaign[]      @relation("CampaignSender")
   auditLogs      AuditLog[]
   refreshTokens  RefreshToken[]
@@ -501,14 +502,13 @@ model Task {
   dueDate     DateTime?
   done        Boolean   @default(false)
   doneAt      DateTime?
-  // assigneeId stays a bare column (no relation declared) — spec choice; will be
-  // tightened to a User FK once Project module owns the user-side inverse.
   assigneeId  String?
   order       Int       @default(0)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  project Project @relation(fields: [projectId], references: [id])
+  project  Project @relation(fields: [projectId], references: [id])
+  assignee User?   @relation(fields: [assigneeId], references: [id])
 
   @@index([projectId, done])
   @@index([assigneeId, done])
