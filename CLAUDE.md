@@ -1,7 +1,7 @@
 # NextGen CRM — Claude Code Context
 
-> **v4.6** | Stand: 2026-05-12 | Aktive Session: Session 8 (M2 Leads & Webformulare) | Branch: feature/session-8-leads
-> Letztes Update: 2026-05-12 (Session 7 M7 Aktivitäten + BookingModule — vollständig)
+> **v4.7** | Stand: 2026-05-21 | Aktive Session: Session 9 (M10 Produktkatalog) | Branch: feature/session-9-products
+> Letztes Update: 2026-05-21 (Session 8 M2 Leads & Webformulare — vollständig)
 
 ## Mission
 AI-natives B2B-CRM mit 10 Modulen + 3 KI-Agenten. Orientiert an Pipedrive,
@@ -43,7 +43,7 @@ nextgen-crm/
 | 5 | M3 Deals — Kritischer Pfad | ✅ | feature/session-5-deals | 4/4 |
 | 6 | M1 Pulse-Feed | ✅ | feature/session-6-pulse | 10/10 |
 | 7 | M7 Aktivitäten + BookingModule | ✅ | feature/session-7-activities | 14/14 |
-| 8 | M2 Leads & Webformulare | ⬜ | — | — |
+| 8 | M2 Leads & Webformulare | ✅ | feature/session-8-leads | 6/6 |
 | 9 | M10 Produktkatalog | ⬜ | — | — |
 | 10 | M4 Projekte | ⬜ | — | — |
 | 11 | M6 E-Mail-Sync — Kritischer Pfad | ⬜ | — | — |
@@ -143,23 +143,27 @@ nextgen-crm/
 24. **[Tech-Debt Session 7] ActivityCalendar ohne Unit-Tests** — react-big-calendar DnD braucht Browser-Events; aus Web-Coverage ausgeschlossen. Geplant Session 16a.
 25. **[Tech-Debt Session 7] Web functions-Schwellwert auf 65% gesenkt** — V8 zählt JSX-Inline-Arrows als Functions. Review in Session 16a.
 26. **[Tech-Debt Session 7] `activities/dto/**` + `booking/dto/**` aus API-Coverage ausgeschlossen** — class-validator DTOs ohne testbares Verhalten, analog zu `auth/dto`.
+27. **[Tech-Debt Session 8] FormBuilder aus Web-Coverage ausgeschlossen** — `@dnd-kit` DnD-Interaktionen nicht unit-testbar. Geplant Session 16a.
+28. **[Tech-Debt Session 8] Public Submit CORS nur via `@Header` Override** — `Access-Control-Allow-Origin: *` direkt am Controller. Volles CORS-Middleware für Cross-Domain Embeds deferred auf Session 15.
+29. **[Tech-Debt Session 8] Lead Enrichment Worker deferred** — BullMQ `lead-enrichment` Queue Stub funktioniert; KI-Logik (Worker) kommt in Session 14.
 
 ---
 
 ## Aktuelle Session-Notizen
-Aktive Session: Session 8 (M2 Leads & Webformulare).
+Aktive Session: Session 9 (M10 Produktkatalog).
 
-**Voraussetzungen erfüllt (aus Session 7):**
-- Activities-API vollständig: `/api/v1/activities` (CRUD + done + conflicts)
-- `activity:completed` WS-Event etabliert
-- BullMQ `deal-scoring` Queue mit 60s Debounce bereit
-- `BookingConfig`-Modell + `User.bookingSlug` im Schema
-- `user:{userId}` Room-Pattern weiter etabliert
+**Voraussetzungen erfüllt (aus Session 8):**
+- FormsModule vollständig: `/api/v1/forms` (CRUD + embed snippet), DOMPurify XSS-Sanitisierung
+- LeadsModule vollständig: `/api/v1/leads` (CRUD + convert + reEnqueue + Soft-Delete)
+- PublicModule: `POST /api/v1/public/forms/:id/submit` — Rate-Limit 5/min/IP, kein Auth
+- BullMQ `lead-enrichment` Queue Stub bereit (Worker: Session 14)
+- `LeadEnrichedEvent` in `@nextgen/types` + `useLeadsSocket` Hook mit React Query Cache Invalidation
+- `lead:enriched` WS-Event via `EventsGateway.emitLeadEnriched` (broadcast an alle Sockets)
 
-**Session 7 abgeschlossen:** M7 Aktivitäten + BookingModule vollständig. Migration `20260512120000_activities_booking`. 14/14 ACs. PR #10.
-→ Details: [docs/20-sessions/session-07-summary.md](docs/20-sessions/session-07-summary.md)
+**Session 8 abgeschlossen:** M2 Leads & Webformulare vollständig. 6/6 ACs. PR #11 (ccb1701).
+→ Details: [docs/20-sessions/session-08-summary.md](docs/20-sessions/session-08-summary.md)
 
-**Tests (kumulativ):** 239 API-Tests (87.36% Stmt / 80.6% Branch), 262 Web-Tests (88.76% Stmt / 85% Branch). Gesamt: 501 Tests.
+**Tests (kumulativ):** 295 API-Tests (86.25% Stmt / 80.35% Branch), 321 Web-Tests (87.7% Stmt / 83.46% Branch). Gesamt: 616 Tests.
 
 ---
 
