@@ -36,6 +36,7 @@ export default defineConfig({
         'src/modules/leads/dto/**',
         'src/modules/forms/dto/**',
         'src/modules/public/dto/**',
+        'src/modules/products/dto/**',
         // Booking module — public Calendly-style endpoints, exercised via integration tests
         'src/modules/booking/booking.module.ts',
         'src/modules/booking/booking.controller.ts',
