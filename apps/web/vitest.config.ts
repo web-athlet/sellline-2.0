@@ -34,6 +34,8 @@ export default defineConfig({
         'app/**/*.tsx',
         // react-big-calendar DnD wrapper — requires browser drag events, not unit-testable
         'components/activities/ActivityCalendar.tsx',
+        // Form builder — complex @dnd-kit DnD state, not unit-testable without drag simulation
+        'components/forms/FormBuilder.tsx',
       ],
       thresholds: {
         statements: 80,

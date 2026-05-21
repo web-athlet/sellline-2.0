@@ -89,3 +89,13 @@ export interface ActivityUpdatedEvent {
   dealId: string | null;
   ts: number;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Lead events — emitted per-user after enrichment completes or fails.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface LeadEnrichedEvent {
+  leadId: string;
+  status: 'DONE' | 'FAILED';
+  ts: number;
+}

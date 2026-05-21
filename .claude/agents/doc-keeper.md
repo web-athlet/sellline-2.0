@@ -110,12 +110,15 @@ Nächste ADR-Nummer: letzte + 1 (z.B. 0005-...).
 
 ### 5. 99-Index aktualisieren
 
-Nach Änderungen an Modul-Docs oder Sessions:
+Unbedingt immer ohne Ausnahme nach Änderungen an Modul-Docs und Sessions-Docs:
+
+docs/99-index.md mit aktuellen Summaries immer updaten.
+
 ```bash
 # Alle Frontmatter-Summaries sammeln
 grep -A1 "^summary:" docs/10-modules/*.md docs/20-sessions/*.md docs/40-decisions/*.md
 ```
-docs/99-index.md mit aktuellen Summaries updaten.
+
 
 ## Frontmatter-Standard (immer validieren)
 
