@@ -33,10 +33,16 @@ export default defineConfig({
         'src/modules/auth/dto/**',
         'src/modules/activities/dto/**',
         'src/modules/booking/dto/**',
+        'src/modules/leads/dto/**',
+        'src/modules/forms/dto/**',
+        'src/modules/public/dto/**',
         // Booking module — public Calendly-style endpoints, exercised via integration tests
         'src/modules/booking/booking.module.ts',
         'src/modules/booking/booking.controller.ts',
         'src/modules/booking/booking.service.ts',
+        // Public form submit — thin controller, rate-limit tested via integration
+        'src/modules/public/public.controller.ts',
+        'src/modules/public/public.module.ts',
         // Single-line AuthGuard subclasses (no logic to assert)
         'src/modules/auth/guards/jwt-pre-2fa.guard.ts',
         'src/modules/auth/guards/jwt-setup-2fa.guard.ts',

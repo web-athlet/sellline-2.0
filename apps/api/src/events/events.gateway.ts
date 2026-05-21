@@ -17,6 +17,7 @@ import type {
   DealRotIndicatorEvent,
   DealStageChangedEvent,
   DealUpdatedEvent,
+  LeadEnrichedEvent,
   PingPayload,
   PongPayload,
   PulseFeedUpdatedEvent,
@@ -152,5 +153,11 @@ export class EventsGateway implements OnGatewayConnection {
 
   emitActivityUpdated(payload: ActivityUpdatedEvent): void {
     this.server?.to(USER_ROOM(payload.userId)).emit('activity:updated', payload);
+  }
+
+  // Broadcast to all connected authenticated users — any manager/admin watching
+  // the leads inbox should see the status change in real time.
+  emitLeadEnriched(payload: LeadEnrichedEvent): void {
+    this.server?.emit('lead:enriched', payload);
   }
 }

@@ -13,9 +13,12 @@ import { ActivitiesModule } from './modules/activities/activities.module';
 import { BookingModule } from './modules/booking/booking.module';
 import { ContactsModule } from './modules/contacts/contacts.module';
 import { DealsModule } from './modules/deals/deals.module';
+import { FormsModule } from './modules/forms/forms.module';
+import { LeadsModule } from './modules/leads/leads.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
 import { PipelinesModule } from './modules/pipelines/pipelines.module';
 import { PulseFeedModule } from './modules/pulse-feed/pulse-feed.module';
+import { PublicModule } from './modules/public/public.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { RedisModule } from './redis/redis.module';
 
@@ -48,6 +51,9 @@ import { RedisModule } from './redis/redis.module';
     PulseFeedModule,
     ActivitiesModule,
     BookingModule,
+    FormsModule,
+    LeadsModule,
+    PublicModule,
   ],
   controllers: [HealthController],
   providers: [
