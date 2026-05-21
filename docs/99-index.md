@@ -24,6 +24,7 @@ summary: "Vollstaendiger Index aller Second-Brain-Dokumente."
 | [session-06-summary.md](20-sessions/session-06-summary.md) | completed | M1 Pulse-Feed vollstaendig: score-sortierter Daily-Feed (3 Tabs), Redis-Cache 30s TTL, WS User-Room, virtualisierte FeedList, Bell-Button-Fix. 222 API-Tests (~98%), 202 Web-Tests. 10/10 ACs. PR #9. |
 | [session-07-summary.md](20-sessions/session-07-summary.md) | completed | M7 Aktivitäten + BookingModule vollständig: Activities-CRUD, Kalender, BookingModule öffentliche Slots, BullMQ Deal-Scoring Debounce, activity:completed WS-Event. 14/14 ACs. PR #10. |
 | [session-08-summary.md](20-sessions/session-08-summary.md) | completed | M2 Leads & Webformulare vollständig: FormsModule + LeadsModule + PublicModule, DnD FormBuilder, BullMQ lead-enrichment Stub, lead:enriched WS-Event, atomare convert-Transaktion. 6/6 ACs. PR #11. |
+| [session-09-summary.md](20-sessions/session-09-summary.md) | completed | M10 Produktkatalog vollständig: ProductsModule CRUD + CSV-Streaming-Import, DealProductsTab, /products Seite. 4/4 ACs. 696 Tests. PR #12. |
 
 ## Reviews (30-reviews/)
 
@@ -39,7 +40,7 @@ summary: "Vollstaendiger Index aller Second-Brain-Dokumente."
 | Datei | Status | Summary |
 |---|---|---|
 | M1-pulse-feed.md | implemented | Score-sortierter Daily-Feed (3 Tabs), Redis-Cache 30s TTL, WS User-Room per user:{userId}, virtualisierte FeedList. Session 6. |
-| M10-products.md | planned | Produktkatalog mit Preisen, Steuern, Waehrungen, Deal-Zuweisung mit Menge und Rabatt, Rechnungs-Frequenz. AC-009. |
+| M10-products.md | implemented | M10 vollständig: CRUD /api/v1/products, CSV-Streaming-Import, DealProductsTab + Deal-Wert-Auto-Update (AC-009). Session 9. |
 | M2-leads.md | implemented | FormsModule + LeadsModule + PublicModule vollständig: embeddable Webformulare, DnD FormBuilder, BullMQ Enrichment Stub, convert-Transaktion (Person+Deal). Session 8. AC-011 ✅. |
 | M3-deals.md | planned | Kanban-Board mit @dnd-kit DnD, 6 Stages, Pipeline-Value server-seitig, Rot-Indikator, Ghosting-Flag. |
 | M4-projects.md | planned | Projekt-Kanban mit Task-Verwaltung, Deal-Verknuepfung, Vorlagen-System, Fortschritts-Tracking. |
