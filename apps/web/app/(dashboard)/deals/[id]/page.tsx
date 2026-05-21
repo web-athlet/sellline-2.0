@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useState } from 'react';
 import { DealDetailHeader } from '@/components/deals/DealDetailHeader';
+import { DealProductsTab } from '@/components/deals/DealProductsTab';
 import { SnoozeGhostingModal } from '@/components/deals/SnoozeGhostingModal';
 import { useDealsSocket } from '@/hooks/use-deals-socket';
 import { formatCurrency, formatDate, scoreColor } from '@/lib/deal-format';
@@ -151,42 +152,7 @@ export default function DealDetailPage() {
               <Field label="Rot-Threshold" value={`${deal.pipeline.rotThresholdDays} Tage`} />
             </div>
           )}
-          {tab === 'products' && (
-            <div className="rounded-card border border-slate-200 bg-white p-4">
-              {deal.products.length === 0 ? (
-                <p className="text-sm text-slate-500">Keine Produkte verknüpft.</p>
-              ) : (
-                <table className="min-w-full text-sm">
-                  <thead className="text-xs font-semibold uppercase text-slate-500">
-                    <tr>
-                      <th className="px-2 py-1 text-left">Produkt</th>
-                      <th className="px-2 py-1 text-right">Menge</th>
-                      <th className="px-2 py-1 text-right">Einzelpreis</th>
-                      <th className="px-2 py-1 text-right">Rabatt</th>
-                      <th className="px-2 py-1 text-right">Total</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {deal.products.map((p) => (
-                      <tr key={p.id}>
-                        <td className="px-2 py-2">{p.product.name}</td>
-                        <td className="px-2 py-2 text-right tabular-nums">{p.quantity}</td>
-                        <td className="px-2 py-2 text-right tabular-nums">
-                          {formatCurrency(p.unitPrice)}
-                        </td>
-                        <td className="px-2 py-2 text-right tabular-nums">
-                          {p.discount} {p.discountType === 'PERCENT' ? '%' : '€'}
-                        </td>
-                        <td className="px-2 py-2 text-right font-medium tabular-nums">
-                          {formatCurrency(p.total)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
-          )}
+          {tab === 'products' && <DealProductsTab dealId={deal.id} products={deal.products} />}
           {tab === 'participants' && (
             <div className="rounded-card border border-slate-200 bg-white p-4">
               {deal.participants.length === 0 ? (

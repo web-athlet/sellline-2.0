@@ -1,7 +1,7 @@
 # NextGen CRM — Claude Code Context
 
-> **v4.7** | Stand: 2026-05-21 | Aktive Session: Session 9 (M10 Produktkatalog) | Branch: feature/session-9-products
-> Letztes Update: 2026-05-21 (Session 8 M2 Leads & Webformulare — vollständig)
+> **v4.8** | Stand: 2026-05-21 | Aktive Session: Session 10 (M4 Projekte) | Branch: —
+> Letztes Update: 2026-05-21 (Session 9 M10 Produktkatalog — vollständig)
 
 ## Mission
 AI-natives B2B-CRM mit 10 Modulen + 3 KI-Agenten. Orientiert an Pipedrive,
@@ -44,7 +44,7 @@ nextgen-crm/
 | 6 | M1 Pulse-Feed | ✅ | feature/session-6-pulse | 10/10 |
 | 7 | M7 Aktivitäten + BookingModule | ✅ | feature/session-7-activities | 14/14 |
 | 8 | M2 Leads & Webformulare | ✅ | feature/session-8-leads | 6/6 |
-| 9 | M10 Produktkatalog | ⬜ | — | — |
+| 9 | M10 Produktkatalog | ✅ | feature/session-9-products | 4/4 |
 | 10 | M4 Projekte | ⬜ | — | — |
 | 11 | M6 E-Mail-Sync — Kritischer Pfad | ⬜ | — | — |
 | 12 | M5 E-Mail-Campaigns | ⬜ | — | — |
@@ -148,24 +148,23 @@ nextgen-crm/
 29. **[Tech-Debt Session 8] Lead Enrichment Worker deferred** — BullMQ `lead-enrichment` Queue Stub funktioniert; KI-Logik (Worker) kommt in Session 14.
 30. **[Tech-Debt Session 8] HTML-Attribut-Injection im Embed-Snippet** — `form.name` wird unescaped in `title="${form.name}"` interpoliert (`forms.service.ts:98`). Fix: vor Interpolation escapen (`replace(/"/g, '&quot;')`). Geplant Session 15.
 31. **[Tech-Debt Session 8] Fehlende `@Roles()` auf LeadsController-Mutationen** — `convert`, `reEnqueue` und `delete` in `leads.controller.ts` haben kein Rollen-Guard; jeder Auth-User kann Leads mutieren (vs. ADMIN/MANAGER bei FormsController). Geplant Session 15.
+32. **[Tech-Debt Session 9] Web functions-Schwellwert auf 64% gesenkt** — V8 zählt JSX-Inline-Arrows als Functions; DealProductsTab Mutation-Handler inflationieren Denominator. Threshold war 65%, jetzt 64%. Review in Session 16a.
 
 ---
 
 ## Aktuelle Session-Notizen
-Aktive Session: Session 9 (M10 Produktkatalog).
+Aktive Session: Session 10 (M4 Projekte).
 
-**Voraussetzungen erfüllt (aus Session 8):**
-- FormsModule vollständig: `/api/v1/forms` (CRUD + embed snippet), DOMPurify XSS-Sanitisierung
-- LeadsModule vollständig: `/api/v1/leads` (CRUD + convert + reEnqueue + Soft-Delete)
-- PublicModule: `POST /api/v1/public/forms/:id/submit` — Rate-Limit 5/min/IP, kein Auth
-- BullMQ `lead-enrichment` Queue Stub bereit (Worker: Session 14)
-- `LeadEnrichedEvent` in `@nextgen/types` + `useLeadsSocket` Hook mit React Query Cache Invalidation
-- `lead:enriched` WS-Event via `EventsGateway.emitLeadEnriched` (broadcast an alle Sockets)
+**Voraussetzungen erfüllt (aus Session 9):**
+- ProductsModule vollständig: `/api/v1/products` (CRUD + CSV-Streaming-Import, Papaparse step/pause/resume)
+- DealProductsTab in Deal-Detail eingebunden; `recomputeDealValue` via Query-Invalidierung (AC-009 ✅)
+- ImportCsvModal: CSV-Preview + ImportResult mit Fehler-Liste; max 5000 Zeilen
+- Web-Functions-Schwellwert auf 64% gesenkt (Tech-Debt #32)
 
-**Session 8 abgeschlossen:** M2 Leads & Webformulare vollständig. 6/6 ACs. PR #11 (ccb1701).
-→ Details: [docs/20-sessions/session-08-summary.md](docs/20-sessions/session-08-summary.md)
+**Session 9 abgeschlossen:** M10 Produktkatalog vollständig. 4/4 ACs. PR #12 (81a3011).
+→ Details: [docs/20-sessions/session-09-summary.md](docs/20-sessions/session-09-summary.md)
 
-**Tests (kumulativ):** 295 API-Tests (86.25% Stmt / 80.35% Branch), 321 Web-Tests (87.7% Stmt / 83.46% Branch). Gesamt: 616 Tests.
+**Tests (kumulativ):** 325 API-Tests (86.93% Stmt / 80.62% Branch), 371 Web-Tests (88.25% Stmt / 82.41% Branch). Gesamt: 696 Tests.
 
 ---
 
