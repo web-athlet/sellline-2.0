@@ -25,6 +25,7 @@ summary: "Vollstaendiger Index aller Second-Brain-Dokumente."
 | [session-07-summary.md](20-sessions/session-07-summary.md) | completed | M7 Aktivitäten + BookingModule vollständig: Activities-CRUD, Kalender, BookingModule öffentliche Slots, BullMQ Deal-Scoring Debounce, activity:completed WS-Event. 14/14 ACs. PR #10. |
 | [session-08-summary.md](20-sessions/session-08-summary.md) | completed | M2 Leads & Webformulare vollständig: FormsModule + LeadsModule + PublicModule, DnD FormBuilder, BullMQ lead-enrichment Stub, lead:enriched WS-Event, atomare convert-Transaktion. 6/6 ACs. PR #11. |
 | [session-09-summary.md](20-sessions/session-09-summary.md) | completed | M10 Produktkatalog vollständig: ProductsModule CRUD + CSV-Streaming-Import, DealProductsTab, /products Seite. 4/4 ACs. 696 Tests. PR #12. |
+| [session-10-summary.md](20-sessions/session-10-summary.md) | completed | M4 Projekte vollständig: ProjectsModule + TasksModule (12 Endpoints), Kanban-Board DnD, Template-Instantiierung, Task.assigneeId FK-Migration, globale Tasks-Seite. 4/4 ACs. ~783 Tests. PR #13. |
 
 ## Reviews (30-reviews/)
 
@@ -43,7 +44,7 @@ summary: "Vollstaendiger Index aller Second-Brain-Dokumente."
 | M10-products.md | implemented | M10 vollständig: CRUD /api/v1/products, CSV-Streaming-Import, DealProductsTab + Deal-Wert-Auto-Update (AC-009). Session 9. |
 | M2-leads.md | implemented | FormsModule + LeadsModule + PublicModule vollständig: embeddable Webformulare, DnD FormBuilder, BullMQ Enrichment Stub, convert-Transaktion (Person+Deal). Session 8. AC-011 ✅. |
 | M3-deals.md | planned | Kanban-Board mit @dnd-kit DnD, 6 Stages, Pipeline-Value server-seitig, Rot-Indikator, Ghosting-Flag. |
-| M4-projects.md | planned | Projekt-Kanban mit Task-Verwaltung, Deal-Verknuepfung, Vorlagen-System, Fortschritts-Tracking. |
+| M4-projects.md | implemented | Projekt-Kanban mit Task-Verwaltung, Deal-Verknüpfung, Vorlagen-System, Fortschritts-Tracking. 12 Endpoints. Session 10. |
 | M5-campaigns.md | planned | DSGVO-konformer Campaign-Versand, HMAC-Tracking-Tokens (kein UUID), Bounce-Handling, KI-Betreffzeilen via GPT-4o, opt_in-Pflicht-Check. AC-025,AC-029. |
 | M6-email.md | planned | Gmail-historyId-Sync, Outlook-Graph, AES-256-GCM E-Mail-Verschluesselung, KI-Thread-Summary, Smart-Reply. AC-007,AC-018. |
 | M7-activities.md | planned | Activity-Kalender mit DnD, Konflikt-Erkennung (Doppelbuchung), polymorphe Verknuepfung Deal/Person/Org. AC-006. |
