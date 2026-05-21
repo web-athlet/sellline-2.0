@@ -146,6 +146,8 @@ nextgen-crm/
 27. **[Tech-Debt Session 8] FormBuilder aus Web-Coverage ausgeschlossen** — `@dnd-kit` DnD-Interaktionen nicht unit-testbar. Geplant Session 16a.
 28. **[Tech-Debt Session 8] Public Submit CORS nur via `@Header` Override** — `Access-Control-Allow-Origin: *` direkt am Controller. Volles CORS-Middleware für Cross-Domain Embeds deferred auf Session 15.
 29. **[Tech-Debt Session 8] Lead Enrichment Worker deferred** — BullMQ `lead-enrichment` Queue Stub funktioniert; KI-Logik (Worker) kommt in Session 14.
+30. **[Tech-Debt Session 8] HTML-Attribut-Injection im Embed-Snippet** — `form.name` wird unescaped in `title="${form.name}"` interpoliert (`forms.service.ts:98`). Fix: vor Interpolation escapen (`replace(/"/g, '&quot;')`). Geplant Session 15.
+31. **[Tech-Debt Session 8] Fehlende `@Roles()` auf LeadsController-Mutationen** — `convert`, `reEnqueue` und `delete` in `leads.controller.ts` haben kein Rollen-Guard; jeder Auth-User kann Leads mutieren (vs. ADMIN/MANAGER bei FormsController). Geplant Session 15.
 
 ---
 
