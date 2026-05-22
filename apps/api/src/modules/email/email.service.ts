@@ -157,7 +157,7 @@ export class EmailService {
   }
 
   private async sendOutlookMessage(userId: string, dto: SendEmailDto): Promise<string> {
-    const token = await this.sync.getOutlookAccessToken(userId);
+    const bearer = await this.sync.getOutlookAccessToken(userId);
     const body: Record<string, unknown> = {
       subject: dto.subject,
       body: { contentType: 'HTML', content: dto.bodyHtml },
@@ -168,7 +168,7 @@ export class EmailService {
 
     const resp = await fetch('https://graph.microsoft.com/v1.0/me/sendMail', {
       method: 'POST',
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      headers: { Authorization: `Bearer ${bearer}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: body, saveToSentItems: true }),
     });
 
