@@ -29,15 +29,18 @@ model User {
   twoFactorEnabled      Boolean   @default(false)
   gmailTokenEncrypted   String?
   outlookTokenEncrypted String?
-  gmailHistoryId        String?
-  gmailWatchExpiresAt   DateTime?
-  createdAt             DateTime  @default(now())
+  gmailHistoryId                 String?
+  gmailWatchExpiresAt            DateTime?
+  outlookSubscriptionId          String?
+  outlookSubscriptionExpiresAt   DateTime?
+  createdAt                      DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
   deletedAt             DateTime?
 
   bookingSlug String? @unique
 
   ownedDeals     Deal[]          @relation("DealOwner")
+  emails         Email[]
   activities     Activity[]
   assignedTasks  Task[]
   campaignSender Campaign[]      @relation("CampaignSender")
@@ -300,13 +303,12 @@ model Email {
   isSent           Boolean   @default(false)
   sentAt           DateTime
   dealId           String?
-  // userId stays a bare column (no relation declared) — spec choice; tightening to
-  // a real FK is deferred to Session 11 when E-Mail-Sync wires up the user side.
   userId           String
   createdAt        DateTime  @default(now())
   deletedAt        DateTime?
 
   deal Deal? @relation(fields: [dealId], references: [id])
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([threadId, userId])
   @@index([dealId])
