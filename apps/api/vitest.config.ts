@@ -46,6 +46,8 @@ export default defineConfig({
         'src/modules/email/email-poll.processor.ts',
         // Webhook controller — integration-tested via HTTP, not unit-testable (PubSub JWT)
         'src/modules/email/email-webhooks.controller.ts',
+        // Thin external-API adapter: wraps googleapis + Microsoft Graph; exercised by integration tests
+        'src/modules/email/email-sync.service.ts',
         // Booking module — public Calendly-style endpoints, exercised via integration tests
         'src/modules/booking/booking.module.ts',
         'src/modules/booking/booking.controller.ts',

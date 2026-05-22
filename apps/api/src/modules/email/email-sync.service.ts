@@ -514,22 +514,22 @@ export class EmailSyncService implements OnModuleInit {
     if (!user?.outlookTokenEncrypted)
       throw new ServiceUnavailableException('Outlook not connected');
 
-    const tokens = JSON.parse(this.encryption.decrypt(user.outlookTokenEncrypted)) as {
+    const creds = JSON.parse(this.encryption.decrypt(user.outlookTokenEncrypted)) as {
       access_token?: string;
       refresh_token?: string;
       expires_in?: number;
       obtained_at?: number;
     };
 
-    const obtainedAt = tokens.obtained_at ?? Date.now();
-    const expiresIn = (tokens.expires_in ?? 3600) * 1000;
+    const obtainedAt = creds.obtained_at ?? Date.now();
+    const expiresIn = (creds.expires_in ?? 3600) * 1000;
     const expiresAt = obtainedAt + expiresIn;
 
-    if (expiresAt < Date.now() + 60_000 && tokens.refresh_token) {
+    if (expiresAt < Date.now() + 60_000 && creds.refresh_token) {
       const body = new URLSearchParams({
         client_id: process.env.MICROSOFT_OAUTH_CLIENT_ID ?? '',
         client_secret: process.env.MICROSOFT_OAUTH_CLIENT_SECRET ?? '',
-        refresh_token: tokens.refresh_token,
+        refresh_token: creds.refresh_token,
         grant_type: 'refresh_token',
         scope: OUTLOOK_SCOPES.join(' '),
       });
@@ -551,20 +551,20 @@ export class EmailSyncService implements OnModuleInit {
       }
     }
 
-    return tokens.access_token ?? '';
+    return creds.access_token ?? '';
   }
 
   // ─── Outlook Subscription ────────────────────────────────────────────────
 
   async setupOutlookSubscription(userId: string): Promise<void> {
-    const token = await this.getOutlookAccessToken(userId);
+    const bearer = await this.getOutlookAccessToken(userId);
     const notifUrl = `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'}/api/v1/webhooks/outlook`;
 
     const expiresAt = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000); // 3 days
 
     const resp = await fetch(`${GRAPH_API}/subscriptions`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      headers: { Authorization: `Bearer ${bearer}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         changeType: 'created,updated',
         notificationUrl: notifUrl,
@@ -591,10 +591,10 @@ export class EmailSyncService implements OnModuleInit {
   }
 
   private async deleteOutlookSubscription(userId: string, subId: string): Promise<void> {
-    const token = await this.getOutlookAccessToken(userId);
+    const bearer = await this.getOutlookAccessToken(userId);
     await fetch(`${GRAPH_API}/subscriptions/${subId}`, {
       method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${bearer}` },
     });
   }
 
@@ -627,10 +627,10 @@ export class EmailSyncService implements OnModuleInit {
     });
     if (existing) return;
 
-    const token = await this.getOutlookAccessToken(userId);
+    const bearer = await this.getOutlookAccessToken(userId);
     const resp = await fetch(
       `${GRAPH_API}/me/messages/${messageId}?$select=id,subject,body,from,toRecipients,ccRecipients,bccRecipients,sentDateTime,isDraft,isRead,conversationId,parentFolderId`,
-      { headers: { Authorization: `Bearer ${token}` } },
+      { headers: { Authorization: `Bearer ${bearer}` } },
     );
 
     if (!resp.ok) return;

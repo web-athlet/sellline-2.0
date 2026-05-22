@@ -2,6 +2,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { DashboardLayout } from './DashboardLayout';
 
+// DashboardLayout uses useQuery to fetch email unread count; mock it to return 0
+vi.mock('@tanstack/react-query', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('@tanstack/react-query')>();
+  return { ...mod, useQuery: vi.fn(() => ({ data: undefined, isLoading: false })) };
+});
+
 vi.mock('next/navigation', () => ({
   usePathname: vi.fn(() => '/pulse'),
   useRouter: vi.fn(() => ({ push: vi.fn() })),

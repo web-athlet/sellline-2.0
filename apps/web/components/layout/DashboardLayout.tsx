@@ -1,9 +1,11 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { NavRail, type NavRailProps } from './NavRail';
 import { useUIStore } from '@/stores/ui-store';
 import { cn } from '@nextgen/utils';
+import { getUnreadCount } from '@/lib/email-api';
 
 interface DashboardLayoutProps extends NavRailProps {
   children: React.ReactNode;
@@ -23,10 +25,19 @@ interface DashboardLayoutProps extends NavRailProps {
 export function DashboardLayout({
   children,
   sidebar,
-  inboxCount,
+  inboxCount: inboxCountProp,
   overdueCount,
 }: DashboardLayoutProps) {
   const { sidebarOpen, setSidebarOpen } = useUIStore();
+
+  // Fetch live unread email count — closes Tech-Debt #10
+  const { data: countData } = useQuery({
+    queryKey: ['email-unread-count'],
+    queryFn: getUnreadCount,
+    refetchInterval: 60_000,
+    retry: false,
+  });
+  const inboxCount = inboxCountProp ?? countData?.unread ?? 0;
 
   // Auto-close sidebar on resize to ≥ sm breakpoint
   useEffect(() => {
