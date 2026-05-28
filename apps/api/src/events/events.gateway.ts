@@ -17,6 +17,8 @@ import type {
   DealRotIndicatorEvent,
   DealStageChangedEvent,
   DealUpdatedEvent,
+  EmailCountUpdatedEvent,
+  EmailReceivedEvent,
   LeadEnrichedEvent,
   PingPayload,
   PongPayload,
@@ -159,5 +161,13 @@ export class EventsGateway implements OnGatewayConnection {
   // the leads inbox should see the status change in real time.
   emitLeadEnriched(payload: LeadEnrichedEvent): void {
     this.server?.emit('lead:enriched', payload);
+  }
+
+  emitEmailReceived(payload: EmailReceivedEvent): void {
+    this.server?.to(USER_ROOM(payload.userId)).emit('email:received', payload);
+  }
+
+  emitEmailCountUpdated(payload: EmailCountUpdatedEvent): void {
+    this.server?.to(USER_ROOM(payload.userId)).emit('email:count_updated', payload);
   }
 }

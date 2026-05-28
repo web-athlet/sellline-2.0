@@ -1,7 +1,7 @@
 # NextGen CRM — Claude Code Context
 
-> **v4.9** | Stand: 2026-05-21 | Aktive Session: Session 11 (M6 E-Mail-Sync) | Branch: —
-> Letztes Update: 2026-05-21 (Session 10 M4 Projekte — vollständig)
+> **v4.10** | Stand: 2026-05-22 | Aktive Session: Session 12 (M5 E-Mail-Campaigns) | Branch: —
+> Letztes Update: 2026-05-22 (Session 11 M6 E-Mail-Sync — vollständig)
 
 ## Mission
 AI-natives B2B-CRM mit 10 Modulen + 3 KI-Agenten. Orientiert an Pipedrive,
@@ -46,7 +46,7 @@ nextgen-crm/
 | 8 | M2 Leads & Webformulare | ✅ | feature/session-8-leads | 6/6 |
 | 9 | M10 Produktkatalog | ✅ | feature/session-9-products | 4/4 |
 | 10 | M4 Projekte | ✅ | feature/session-10-projects | 4/4 |
-| 11 | M6 E-Mail-Sync — Kritischer Pfad | ⬜ | — | — |
+| 11 | M6 E-Mail-Sync — Kritischer Pfad | ✅ | feature/session-11-email | 4/4 |
 | 12 | M5 E-Mail-Campaigns | ⬜ | — | — |
 | 13 | M9 Insights & Analytics | ⬜ | — | — |
 | 14 | KI-Agenten (Enrichment, Scoring, Ghosting) | ⬜ | — | — |
@@ -153,22 +153,26 @@ nextgen-crm/
 34. **[Tech-Debt Session 10] `testTimeout: 30_000` in vitest.config.ts** — bcrypt cost-12 unter paralleler Turbo-Last übersteigt 5000ms Default. Verhindert flaky timeouts; kein funktionales Problem.
 35. **[Tech-Debt Session 10] ProjectKanban ohne order-Feld** — DnD ändert nur Status, keine Reihenfolge innerhalb einer Spalte. Project-Model hat kein `order`-Feld. Erweiterung in Session 16a möglich.
 36. **[Tech-Debt Session 10] Global Tasks `/tasks` Client-seitige Datumsfilterung** — Filter 'today'/'week' nutzen Browser-Timezone via `isSameDay()`/`isThisWeek()`. Serverseitige Filterung für konsistentes Verhalten geplant Session 16a.
+37. **[Tech-Debt Session 11] `email-sync.service.ts` aus Unit-Coverage ausgeschlossen** — External-API-Wrapper (googleapis + Microsoft Graph). Integration-Tests in Session 16a.
+38. **[Tech-Debt Session 11] Keine Rate-Limitierung auf Webhook-Endpoints** — `/api/v1/webhooks/gmail` + `/outlook` sind `@Public`; kein IP-Rate-Limit. Session 15.
+39. **[Tech-Debt Session 11] `getOutlookAccessToken` nutzt `obtained_at`-Heuristik** — Microsoft gibt `ext_expires_in` zurück, wir rechnen selbst. Clock-Drift-Risiko minimal. Session 15.
+40. **[Done Session 11] Tech-Debt #10 (NavRail Inbox-Badge)** — `DashboardLayout` ruft `getUnreadCount` mit 60 s Refetch via React Query. Badge live verdrahtet.
 
 ---
 
 ## Aktuelle Session-Notizen
-Aktive Session: Session 11 (M6 E-Mail-Sync — Kritischer Pfad).
+Aktive Session: Session 12 (M5 E-Mail-Campaigns).
 
-**Voraussetzungen erfüllt (aus Session 10):**
-- ProjectsModule + TasksModule vollständig: 12 Endpoints, Kanban-Board, Template-Instantiierung
-- Task.assigneeId FK-Constraint migriert (Tech-Debt #5 erledigt)
-- Globale Tasks-Seite `/tasks` mit 4 Filtern
-- Tech-Debts #33-36 dokumentiert
+**Voraussetzungen erfüllt (aus Session 11):**
+- EmailModule vollständig: 14 Endpoints, Gmail + Outlook OAuth2, Watch/Poll, GPT-4o Summary
+- Email.userId FK-Constraint migriert (Tech-Debt #5 erledigt)
+- Inbox-UI mit 2-Panel-Layout, TipTap-Compose, NavRail-Badge
+- Tech-Debts #37-40 dokumentiert
 
-**Session 10 abgeschlossen:** M4 Projekte vollständig. 4/4 ACs. PR #13.
-→ Details: [docs/20-sessions/session-10-summary.md](docs/20-sessions/session-10-summary.md)
+**Session 11 abgeschlossen:** M6 E-Mail-Sync vollständig. 4/4 ACs. PR offen.
+→ Details: [docs/20-sessions/session-11-summary.md](docs/20-sessions/session-11-summary.md)
 
-**Tests (kumulativ):** ~357 API-Tests (~87% Stmt / ~81% Branch), ~426 Web-Tests (~88% Stmt / ~83% Branch). Gesamt: ~783 Tests.
+**Tests (kumulativ):** ~386 API-Tests (~80%+ Stmt), ~469 Web-Tests (~80%+ Stmt). Gesamt: ~855 Tests.
 
 ---
 
@@ -198,7 +202,13 @@ Aktive Session: Session 11 (M6 E-Mail-Sync — Kritischer Pfad).
 | `MICROSOFT_OAUTH_CLIENT_SECRET` | Microsoft OAuth Client Secret | 2 |
 | `MICROSOFT_OAUTH_CALLBACK_URL` | Microsoft OAuth Callback URL | 2 |
 | `SEED_ALLOW_PROD` | Prod-Seed-Guard-Override (setze `1` um Seed in production zu erzwingen — sonst exit 1) | 1-fix |
-| _(weitere folgen pro Session)_ | | |
+| `GMAIL_SYNC_CALLBACK_URL` | Redirect-URL für Gmail OAuth E-Mail-Sync Callback | 11 |
+| `EMAIL_OAUTH_STATE_SECRET` | HMAC-Secret für OAuth CSRF State-Tokens (≥32 chars; Fallback: JWT_SECRET) | 11 |
+| `GCP_PUBSUB_PROJECT` | Google Cloud Projekt-ID für Gmail Watch (leer = Watch deaktiviert) | 11 |
+| `GCP_PUBSUB_TOPIC` | PubSub Topic Name (default: `nextgen-gmail-push`) | 11 |
+| `GCP_PUBSUB_SA_EMAIL` | Service-Account-E-Mail für PubSub JWT-Verifikation (leer = dev-Modus) | 11 |
+| `OUTLOOK_SYNC_CALLBACK_URL` | Redirect-URL für Outlook OAuth E-Mail-Sync Callback | 11 |
+| `OPENAI_API_KEY` | OpenAI API Key für GPT-4o Thread-Summary | 11 |
 
 ---
 

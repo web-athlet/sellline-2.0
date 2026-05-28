@@ -15,41 +15,58 @@ bash scripts/quality-gate.sh
 
 Wenn Quality-Gate FAIL: **STOPP**. Erst Fehler beheben, dann erneut `/session-end $ARGUMENTS`.
 
-## Schritt 2: @doc-keeper beauftragen
+## Schritt 2: Docs direkt erstellen (create_file + str_replace)
 
-Rufe @doc-keeper mit folgenden Informationen:
+WICHTIG: Keinen @doc-keeper Subagenten beauftragen — direkt mit Tools arbeiten.
 
+Erstelle und verifiziere in dieser Reihenfolge:
+
+### 2a. Session-Summary erstellen
+Nutze create_file für docs/20-sessions/session-$ARGUMENTS-summary.md mit:
+- Frontmatter (title, tags, status: completed, session, last_updated, summary)
+- TLDR (5 Punkte: was gebaut, Schema-Änderungen, Env-Vars, Limitierungen, nächste Session braucht)
+- Implementierungsdetails (Backend, Frontend, Tests, ACs, Tech-Debt)
+
+Sofort verifizieren:
+```bash
+ls -la docs/20-sessions/session-$ARGUMENTS-summary.md
 ```
-@doc-keeper Erstelle Session-Summary für Session $ARGUMENTS.
+Wenn Datei fehlt → nochmal erstellen, nicht weitermachen.
 
-Implementiert wurde: [Zusammenfassung der Session]
+### 2b. Modul-Doc aktualisieren
+Nutze str_replace für das relevante docs/10-modules/M*.md:
+- status: planned → implemented
+- last_updated aktualisieren
 
-Schema-Änderungen (neue/geänderte Prisma-Models):
-[Liste]
-
-Neue Env-Variablen:
-[Liste oder "keine"]
-
-Bekannte Limitierungen / Tech-Debt:
-[Liste oder "keine"]
-
-Nächste Session-Abhängigkeiten:
-[Was muss für Session N+1 vorhanden sein]
-
-AC-Status:
-[Welche ACs wurden erfüllt, welche nicht]
-
-Coverage nach Session:
-Unit: x% | Integration: x%
+Sofort verifizieren:
+```bash
+grep "status:" docs/10-modules/M*.md
 ```
 
-Warte auf Bestätigung von @doc-keeper, dass folgende Dateien aktualisiert wurden:
-- [ ] docs/20-sessions/session-{N}-summary.md erstellt
-- [ ] CLAUDE.md Session-Status aktualisiert (⬜ → ✅)
-- [ ] CLAUDE.md Env-Variablen ergänzt
-- [ ] CLAUDE.md Offene Punkte aktualisiert
-- [ ] docs/10-modules/M*.md Status aktualisiert
-- [ ] docs/99-index.md aktualisiert
+### 2c. CLAUDE.md aktualisieren
+Nutze str_replace für CLAUDE.md:
+- Session $ARGUMENTS Row: ⬜ → ✅
+- Version erhöhen (v4.X → v4.X+1)
+- Aktive Session auf $ARGUMENTS+1 setzen
+- Neue Env-Variablen eintragen falls vorhanden
+- Tech-Debts eintragen falls vorhanden
+
+Sofort verifizieren:
+```bash
+head -3 CLAUDE.md
+```
+
+### 2d. Index aktualisieren
+Nutze str_replace für docs/99-index.md:
+- Session $ARGUMENTS Eintrag in Sessions-Tabelle hinzufügen
+- Modul-Status aktualisieren
+
+Sofort verifizieren:
+```bash
+grep "session-$ARGUMENTS" docs/99-index.md
+```
+
+Erst wenn ALLE 4 Verifikationen grün sind → weiter mit Schritt 3.
 
 ## Schritt 3: Git-Commit
 

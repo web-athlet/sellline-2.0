@@ -99,3 +99,20 @@ export interface LeadEnrichedEvent {
   status: 'DONE' | 'FAILED';
   ts: number;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Email events — emitted per-user when a new email is synced.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface EmailReceivedEvent {
+  userId: string;
+  emailId: string;
+  threadId: string;
+  ts: number;
+}
+
+export interface EmailCountUpdatedEvent {
+  userId: string;
+  unreadCount: number;
+  ts: number;
+}
