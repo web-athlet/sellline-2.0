@@ -36,6 +36,10 @@ export default defineConfig({
         'components/activities/ActivityCalendar.tsx',
         // Form builder — complex @dnd-kit DnD state, not unit-testable without drag simulation
         'components/forms/FormBuilder.tsx',
+        // Campaign email editor — @dnd-kit sortable blocks, not unit-testable without drag simulation
+        'components/campaigns/CampaignEmailEditor.tsx',
+        // Campaign wizard — complex multi-step state with router/session, exercised e2e
+        'components/campaigns/CampaignWizard.tsx',
       ],
       thresholds: {
         statements: 80,

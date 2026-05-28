@@ -2,7 +2,7 @@
 title: "Gesamt-Index aller Docs"
 tags: [index, navigation, all-docs]
 status: active
-last_updated: 2026-05-10
+last_updated: 2026-05-28
 summary: "Vollstaendiger Index aller Second-Brain-Dokumente."
 ---
 
@@ -27,6 +27,7 @@ summary: "Vollstaendiger Index aller Second-Brain-Dokumente."
 | [session-09-summary.md](20-sessions/session-09-summary.md) | completed | M10 Produktkatalog vollständig: ProductsModule CRUD + CSV-Streaming-Import, DealProductsTab, /products Seite. 4/4 ACs. 696 Tests. PR #12. |
 | [session-10-summary.md](20-sessions/session-10-summary.md) | completed | M4 Projekte vollständig: ProjectsModule + TasksModule (12 Endpoints), Kanban-Board DnD, Template-Instantiierung, Task.assigneeId FK-Migration, globale Tasks-Seite. 4/4 ACs. ~783 Tests. PR #13. |
 | [session-11-summary.md](20-sessions/session-11-summary.md) | completed | M6 E-Mail-Sync vollständig: Gmail + Outlook OAuth2, AES-256-GCM Body-Verschlüsselung, BullMQ Watch/Poll-Fallback, GPT-4o Thread-Summary, Inbox-UI 2-Panel, NavRail-Badge. 14 Endpoints. 4/4 ACs. ~855 Tests. |
+| [session-12-summary.md](20-sessions/session-12-summary.md) | completed | M5 E-Mail-Campaigns vollständig: DSGVO-Validierung, HMAC-Tracking-Tokens, BullMQ-Batch-Versand, GPT-4o Betreffzeilen, 4-Schritt-Wizard, Drag-Drop-Editor. 13 Endpoints. 7/7 ACs. ~953 Tests. |
 
 ## Reviews (30-reviews/)
 
@@ -46,7 +47,7 @@ summary: "Vollstaendiger Index aller Second-Brain-Dokumente."
 | M2-leads.md | implemented | FormsModule + LeadsModule + PublicModule vollständig: embeddable Webformulare, DnD FormBuilder, BullMQ Enrichment Stub, convert-Transaktion (Person+Deal). Session 8. AC-011 ✅. |
 | M3-deals.md | planned | Kanban-Board mit @dnd-kit DnD, 6 Stages, Pipeline-Value server-seitig, Rot-Indikator, Ghosting-Flag. |
 | M4-projects.md | implemented | Projekt-Kanban mit Task-Verwaltung, Deal-Verknüpfung, Vorlagen-System, Fortschritts-Tracking. 12 Endpoints. Session 10. |
-| M5-campaigns.md | planned | DSGVO-konformer Campaign-Versand, HMAC-Tracking-Tokens (kein UUID), Bounce-Handling, KI-Betreffzeilen via GPT-4o, opt_in-Pflicht-Check. AC-025,AC-029. |
+| M5-campaigns.md | implemented | DSGVO-konformer Campaign-Versand, HMAC-Tracking-Tokens, BullMQ-Batch-Versand (50/Batch), GPT-4o Betreffzeilen, Bounce-Handling. 13 Endpoints. Session 12. |
 | M6-email.md | implemented | Gmail + Outlook OAuth2, AES-256-GCM Body-Verschlüsselung, BullMQ Watch/Poll, GPT-4o Thread-Summary, Inbox-UI. 14 Endpoints. Session 11. |
 | M7-activities.md | planned | Activity-Kalender mit DnD, Konflikt-Erkennung (Doppelbuchung), polymorphe Verknuepfung Deal/Person/Org. AC-006. |
 | M8-contacts.md | implemented | Personen und Firmen: CRUD, Timeline, Duplikat-Erkennung (fast-fuzzy, Threshold 0.85), Merge, Org-Hierarchie-Tree. Partial Unique Index. Session 4. |

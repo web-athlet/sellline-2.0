@@ -221,6 +221,7 @@ model Person {
   optIn       Boolean   @default(false)
   optInSource String?
   optInAt     DateTime?
+  optOutAt    DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
@@ -420,6 +421,7 @@ model Campaign {
   name            String
   subject         String
   bodyHtml        String
+  previewText     String?
   status          CampaignStatus @default(DRAFT)
   scheduledAt     DateTime?
   sentAt          DateTime?
@@ -454,16 +456,18 @@ model CampaignContact {
   campaignId     String
   personId       String
   trackingToken  String    @unique
+  sentAt         DateTime?
   openedAt       DateTime?
   clickedAt      DateTime?
   unsubscribedAt DateTime?
   bouncedAt      DateTime?
 
-  campaign Campaign @relation(fields: [campaignId], references: [id])
-  person   Person   @relation(fields: [personId], references: [id])
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  person   Person   @relation(fields: [personId], references: [id], onDelete: Cascade)
 
   @@unique([campaignId, personId])
   @@index([trackingToken])
+  @@index([campaignId, sentAt])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

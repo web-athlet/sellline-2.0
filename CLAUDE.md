@@ -1,7 +1,7 @@
 # NextGen CRM — Claude Code Context
 
-> **v4.10** | Stand: 2026-05-22 | Aktive Session: Session 12 (M5 E-Mail-Campaigns) | Branch: —
-> Letztes Update: 2026-05-22 (Session 11 M6 E-Mail-Sync — vollständig)
+> **v4.11** | Stand: 2026-05-28 | Aktive Session: Session 13 (M9 Insights & Analytics) | Branch: —
+> Letztes Update: 2026-05-28 (Session 12 M5 E-Mail-Campaigns — vollständig)
 
 ## Mission
 AI-natives B2B-CRM mit 10 Modulen + 3 KI-Agenten. Orientiert an Pipedrive,
@@ -47,7 +47,7 @@ nextgen-crm/
 | 9 | M10 Produktkatalog | ✅ | feature/session-9-products | 4/4 |
 | 10 | M4 Projekte | ✅ | feature/session-10-projects | 4/4 |
 | 11 | M6 E-Mail-Sync — Kritischer Pfad | ✅ | feature/session-11-email | 4/4 |
-| 12 | M5 E-Mail-Campaigns | ⬜ | — | — |
+| 12 | M5 E-Mail-Campaigns | ✅ | feature/session-12-campaigns | 7/7 |
 | 13 | M9 Insights & Analytics | ⬜ | — | — |
 | 14 | KI-Agenten (Enrichment, Scoring, Ghosting) | ⬜ | — | — |
 | 15 | Security & DSGVO-Härtung | ⬜ | — | — |
@@ -157,22 +157,29 @@ nextgen-crm/
 38. **[Tech-Debt Session 11] Keine Rate-Limitierung auf Webhook-Endpoints** — `/api/v1/webhooks/gmail` + `/outlook` sind `@Public`; kein IP-Rate-Limit. Session 15.
 39. **[Tech-Debt Session 11] `getOutlookAccessToken` nutzt `obtained_at`-Heuristik** — Microsoft gibt `ext_expires_in` zurück, wir rechnen selbst. Clock-Drift-Risiko minimal. Session 15.
 40. **[Done Session 11] Tech-Debt #10 (NavRail Inbox-Badge)** — `DashboardLayout` ruft `getUnreadCount` mit 60 s Refetch via React Query. Badge live verdrahtet.
+41. **[Tech-Debt Session 12] MailService ohne echtes SMTP** — `sendCampaignEmail` ist Stub-Log. Real SendGrid/Postmark in Session 15.
+42. **[Tech-Debt Session 12] CampaignEmailEditor + CampaignWizard ohne Unit-Tests** — @dnd-kit DnD + Router/Session. Session 16a.
+43. **[Tech-Debt Session 12] Keine Rate-Limitierung auf Tracking-Endpoints** — `GET /public/track/open/:sig` ohne IP-Rate-Limit. Session 15.
+44. **[Tech-Debt Session 12] Kein separates CAMPAIGN_TRACKING_SECRET in .env** — Fällt auf JWT_SECRET zurück. Deployment-Checkliste Session 15.
+45. **[Done Session 12] Tech-Debt #9 S5** — HMAC-Tracking-Token in `CampaignContact.trackingToken` implementiert.
+46. **[Done Session 12] Tech-Debt #9 D3** — `Person.optOutAt DateTime?` migriert.
+47. **[Done Session 12] Tech-Debt #9 D4** — `CampaignContact onDelete: Cascade` für Campaign + Person implementiert.
 
 ---
 
 ## Aktuelle Session-Notizen
-Aktive Session: Session 12 (M5 E-Mail-Campaigns).
+Aktive Session: Session 13 (M9 Insights & Analytics).
 
-**Voraussetzungen erfüllt (aus Session 11):**
-- EmailModule vollständig: 14 Endpoints, Gmail + Outlook OAuth2, Watch/Poll, GPT-4o Summary
-- Email.userId FK-Constraint migriert (Tech-Debt #5 erledigt)
-- Inbox-UI mit 2-Panel-Layout, TipTap-Compose, NavRail-Badge
-- Tech-Debts #37-40 dokumentiert
+**Voraussetzungen erfüllt (aus Session 12):**
+- CampaignsModule vollständig: 13 Endpoints, DSGVO-Validierung, HMAC-Tracking, BullMQ-Versand
+- Person.optOutAt + CampaignContact.sentAt migriert (Tech-Debts D3/D4 erledigt)
+- 4-Schritt-Wizard + Drag-Drop-Editor implementiert
+- Campaign.openCount/clickCount/bounceCount/unsubCount live (für Insights)
 
-**Session 11 abgeschlossen:** M6 E-Mail-Sync vollständig. 4/4 ACs. PR offen.
-→ Details: [docs/20-sessions/session-11-summary.md](docs/20-sessions/session-11-summary.md)
+**Session 12 abgeschlossen:** M5 E-Mail-Campaigns vollständig. 7/7 ACs. PR: #16.
+→ Details: [docs/20-sessions/session-12-summary.md](docs/20-sessions/session-12-summary.md)
 
-**Tests (kumulativ):** ~386 API-Tests (~80%+ Stmt), ~469 Web-Tests (~80%+ Stmt). Gesamt: ~855 Tests.
+**Tests (kumulativ):** ~448 API-Tests (~86%+ Stmt), ~505 Web-Tests (~90%+ Stmt). Gesamt: ~953 Tests.
 
 ---
 
@@ -208,7 +215,8 @@ Aktive Session: Session 12 (M5 E-Mail-Campaigns).
 | `GCP_PUBSUB_TOPIC` | PubSub Topic Name (default: `nextgen-gmail-push`) | 11 |
 | `GCP_PUBSUB_SA_EMAIL` | Service-Account-E-Mail für PubSub JWT-Verifikation (leer = dev-Modus) | 11 |
 | `OUTLOOK_SYNC_CALLBACK_URL` | Redirect-URL für Outlook OAuth E-Mail-Sync Callback | 11 |
-| `OPENAI_API_KEY` | OpenAI API Key für GPT-4o Thread-Summary | 11 |
+| `OPENAI_API_KEY` | OpenAI API Key für GPT-4o Thread-Summary + Campaign-Betreffzeilen | 11 |
+| `CAMPAIGN_TRACKING_SECRET` | HMAC-Secret für Tracking-Tokens (open/click/unsub). Fallback: JWT_SECRET. Empfehlung: separater 32-Byte-Hex-String. | 12 |
 
 ---
 
