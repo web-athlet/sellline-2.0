@@ -1,4 +1,12 @@
-import { IsArray, IsEmail, IsOptional, IsString, IsUUID, MinLength } from 'class-validator';
+import {
+  IsArray,
+  IsEmail,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Matches,
+  MinLength,
+} from 'class-validator';
 
 export class SendEmailDto {
   @IsArray()
@@ -33,5 +41,6 @@ export class SendEmailDto {
 
   @IsOptional()
   @IsString()
+  @Matches(/^[^\r\n]*$/, { message: 'inReplyToMessageId must not contain CRLF' })
   inReplyToMessageId?: string;
 }

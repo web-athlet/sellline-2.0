@@ -70,6 +70,13 @@ export class EmailSyncService implements OnModuleInit {
   ) {
     this.stateSecret =
       process.env.EMAIL_OAUTH_STATE_SECRET ?? process.env.JWT_SECRET ?? 'dev-secret';
+    if (
+      process.env.NODE_ENV === 'production' &&
+      !process.env.EMAIL_OAUTH_STATE_SECRET &&
+      !process.env.JWT_SECRET
+    ) {
+      throw new Error('EMAIL_OAUTH_STATE_SECRET is required in production');
+    }
   }
 
   async onModuleInit(): Promise<void> {
@@ -237,7 +244,10 @@ export class EmailSyncService implements OnModuleInit {
 
   async verifyPubSubToken(token: string | undefined): Promise<boolean> {
     if (!token) return false;
-    if (!process.env.GCP_PUBSUB_SA_EMAIL) return true; // dev: skip verification
+    if (!process.env.GCP_PUBSUB_SA_EMAIL) {
+      if (process.env.NODE_ENV === 'production') return false;
+      return true; // dev: skip verification
+    }
 
     try {
       const { OAuth2Client: GOAuth2 } = await import('google-auth-library');
