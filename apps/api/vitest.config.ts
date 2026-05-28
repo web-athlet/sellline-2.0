@@ -42,6 +42,7 @@ export default defineConfig({
         'src/modules/projects/dto/**',
         'src/modules/email/dto/**',
         'src/modules/campaigns/dto/**',
+        'src/modules/insights/dto/**',
         // BullMQ processors — thin dispatcher wrappers, logic is in services
         'src/modules/email/email-sync.processor.ts',
         'src/modules/email/email-poll.processor.ts',

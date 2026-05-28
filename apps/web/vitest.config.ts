@@ -40,6 +40,10 @@ export default defineConfig({
         'components/campaigns/CampaignEmailEditor.tsx',
         // Campaign wizard — complex multi-step state with router/session, exercised e2e
         'components/campaigns/CampaignWizard.tsx',
+        // Dashboard builder — react-grid-layout + ResizeObserver not unit-testable, exercised e2e
+        'components/insights/DashboardBuilder.tsx',
+        // Chart widget — Recharts renders SVG; chart logic exercised via integration, layout tested e2e
+        'components/insights/ChartWidget.tsx',
       ],
       thresholds: {
         statements: 80,

@@ -28,6 +28,7 @@ summary: "Vollstaendiger Index aller Second-Brain-Dokumente."
 | [session-10-summary.md](20-sessions/session-10-summary.md) | completed | M4 Projekte vollständig: ProjectsModule + TasksModule (12 Endpoints), Kanban-Board DnD, Template-Instantiierung, Task.assigneeId FK-Migration, globale Tasks-Seite. 4/4 ACs. ~783 Tests. PR #13. |
 | [session-11-summary.md](20-sessions/session-11-summary.md) | completed | M6 E-Mail-Sync vollständig: Gmail + Outlook OAuth2, AES-256-GCM Body-Verschlüsselung, BullMQ Watch/Poll-Fallback, GPT-4o Thread-Summary, Inbox-UI 2-Panel, NavRail-Badge. 14 Endpoints. 4/4 ACs. ~855 Tests. |
 | [session-12-summary.md](20-sessions/session-12-summary.md) | completed | M5 E-Mail-Campaigns vollständig: DSGVO-Validierung, HMAC-Tracking-Tokens, BullMQ-Batch-Versand, GPT-4o Betreffzeilen, 4-Schritt-Wizard, Drag-Drop-Editor. 13 Endpoints. 7/7 ACs. ~953 Tests. |
+| [session-13-summary.md](20-sessions/session-13-summary.md) | completed | M9 Insights & Analytics vollständig: 8 Standard-Reports, KI-Verlust-Analyse (Cron + manuell, DSGVO-konform), Dashboard-Builder (react-grid-layout v2, 12 Widgets, localStorage). 3 Endpoints. 2/2 ACs. ~1012 Tests. |
 
 ## Reviews (30-reviews/)
 
@@ -51,7 +52,7 @@ summary: "Vollstaendiger Index aller Second-Brain-Dokumente."
 | M6-email.md | implemented | Gmail + Outlook OAuth2, AES-256-GCM Body-Verschlüsselung, BullMQ Watch/Poll, GPT-4o Thread-Summary, Inbox-UI. 14 Endpoints. Session 11. |
 | M7-activities.md | planned | Activity-Kalender mit DnD, Konflikt-Erkennung (Doppelbuchung), polymorphe Verknuepfung Deal/Person/Org. AC-006. |
 | M8-contacts.md | implemented | Personen und Firmen: CRUD, Timeline, Duplikat-Erkennung (fast-fuzzy, Threshold 0.85), Merge, Org-Hierarchie-Tree. Partial Unique Index. Session 4. |
-| M9-insights.md | planned | Dashboard-Builder (react-grid-layout, keine Kollision via verticalCompact), 8 Standard-Reports, KI-Verlust-Analyse woechentlich per Cron. AC-020. |
+| M9-insights.md | implemented | Dashboard-Builder (react-grid-layout v2, verticalCompactor, localStorage-Persistenz), 8 Standard-Reports, KI-Verlust-Analyse (Cron + manuell). 3 Endpoints. 2/2 ACs. |
 
 ## Entscheidungen (ADRs) (40-decisions/)
 
