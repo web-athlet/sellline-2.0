@@ -1,6 +1,7 @@
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
 import { CryptoModule } from './common/crypto/crypto.module';
@@ -19,6 +20,7 @@ import { OrganizationsModule } from './modules/organizations/organizations.modul
 import { ProductsModule } from './modules/products/products.module';
 import { CampaignsModule } from './modules/campaigns/campaigns.module';
 import { EmailModule } from './modules/email/email.module';
+import { InsightsModule } from './modules/insights/insights.module';
 import { ProjectsModule } from './modules/projects/projects.module';
 import { PipelinesModule } from './modules/pipelines/pipelines.module';
 import { PulseFeedModule } from './modules/pulse-feed/pulse-feed.module';
@@ -36,6 +38,7 @@ import { RedisModule } from './redis/redis.module';
             : undefined,
       },
     }),
+    ScheduleModule.forRoot(),
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 100 }]),
     BullModule.forRoot({
       connection: {
@@ -62,6 +65,7 @@ import { RedisModule } from './redis/redis.module';
     ProjectsModule,
     EmailModule,
     CampaignsModule,
+    InsightsModule,
   ],
   controllers: [HealthController],
   providers: [
