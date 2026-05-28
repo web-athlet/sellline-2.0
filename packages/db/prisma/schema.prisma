@@ -51,6 +51,8 @@ model User {
 
   @@index([deletedAt])
   @@index([email, deletedAt])
+  @@index([outlookSubscriptionId])
+  @@index([outlookSubscriptionExpiresAt])
 }
 
 enum Role {

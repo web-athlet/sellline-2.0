@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import type { AccessTokenPayload } from '../auth/auth.types';
+import { Public } from '../auth/decorators/public.decorator';
 import { QueryEmailsDto } from './dto/query-emails.dto';
 import { SendEmailDto } from './dto/send-email.dto';
 import { EmailService } from './email.service';
@@ -74,6 +75,7 @@ export class EmailController {
     return { url };
   }
 
+  @Public()
   @Get('gmail/callback')
   @Redirect()
   async gmailCallback(@Query('code') code: string, @Query('state') state: string) {
@@ -96,6 +98,7 @@ export class EmailController {
     return { url };
   }
 
+  @Public()
   @Get('outlook/callback')
   @Redirect()
   async outlookCallback(@Query('code') code: string, @Query('state') state: string) {
