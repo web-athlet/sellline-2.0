@@ -1,7 +1,7 @@
 # NextGen CRM — Claude Code Context
 
-> **v4.11** | Stand: 2026-05-28 | Aktive Session: Session 13 (M9 Insights & Analytics) | Branch: —
-> Letztes Update: 2026-05-28 (Session 12 M5 E-Mail-Campaigns — vollständig)
+> **v4.12** | Stand: 2026-05-29 | Aktive Session: Session 14 (KI-Agenten) | Branch: —
+> Letztes Update: 2026-05-29 (Session 13 M9 Insights & Analytics — vollständig)
 
 ## Mission
 AI-natives B2B-CRM mit 10 Modulen + 3 KI-Agenten. Orientiert an Pipedrive,
@@ -48,7 +48,7 @@ nextgen-crm/
 | 10 | M4 Projekte | ✅ | feature/session-10-projects | 4/4 |
 | 11 | M6 E-Mail-Sync — Kritischer Pfad | ✅ | feature/session-11-email | 4/4 |
 | 12 | M5 E-Mail-Campaigns | ✅ | feature/session-12-campaigns | 7/7 |
-| 13 | M9 Insights & Analytics | ⬜ | — | — |
+| 13 | M9 Insights & Analytics | ✅ | feature/session-13-insights | 2/2 |
 | 14 | KI-Agenten (Enrichment, Scoring, Ghosting) | ⬜ | — | — |
 | 15 | Security & DSGVO-Härtung | ⬜ | — | — |
 | 16a | Testing & Performance | ⬜ | — | — |
@@ -164,22 +164,25 @@ nextgen-crm/
 45. **[Done Session 12] Tech-Debt #9 S5** — HMAC-Tracking-Token in `CampaignContact.trackingToken` implementiert.
 46. **[Done Session 12] Tech-Debt #9 D3** — `Person.optOutAt DateTime?` migriert.
 47. **[Done Session 12] Tech-Debt #9 D4** — `CampaignContact onDelete: Cascade` für Campaign + Person implementiert.
+48. **[Tech-Debt Session 13] DashboardBuilder + ChartWidget ohne Unit-Tests** — react-grid-layout ResizeObserver + Recharts SVG. Session 16a.
+49. **[Tech-Debt Session 13] InsightsReports ohne Pagination/Caching** — Wochenloop-Queries können bei großen Datenmengen langsam werden. Redis-Cache in Session 15.
+50. **[Tech-Debt Session 13] Kein Date-Preset für Reports** — Nur `from/to` ISO-Strings; keine Shortcuts wie `7d`, `30d`. UX-Verbesserung in Session 16a.
 
 ---
 
 ## Aktuelle Session-Notizen
-Aktive Session: Session 13 (M9 Insights & Analytics).
+Aktive Session: Session 14 (KI-Agenten: Enrichment, Scoring, Ghosting-Detection).
 
-**Voraussetzungen erfüllt (aus Session 12):**
-- CampaignsModule vollständig: 13 Endpoints, DSGVO-Validierung, HMAC-Tracking, BullMQ-Versand
-- Person.optOutAt + CampaignContact.sentAt migriert (Tech-Debts D3/D4 erledigt)
-- 4-Schritt-Wizard + Drag-Drop-Editor implementiert
-- Campaign.openCount/clickCount/bounceCount/unsubCount live (für Insights)
+**Voraussetzungen erfüllt (aus Session 13):**
+- InsightsModule vollständig: 3 Endpoints, 8 Report-Typen, KI-Verlust-Analyse (Cron + manuell)
+- react-grid-layout v2 Dashboard mit 12 Widgets, localStorage-Persistenz
+- AIInsight-Model live (type: 'loss_analysis' schreibbar)
+- @nestjs/schedule installiert (Cron-Support für Session 14 wiederverwertbar)
 
-**Session 12 abgeschlossen:** M5 E-Mail-Campaigns vollständig. 7/7 ACs. PR: #16.
-→ Details: [docs/20-sessions/session-12-summary.md](docs/20-sessions/session-12-summary.md)
+**Session 13 abgeschlossen:** M9 Insights & Analytics vollständig. 2/2 ACs. PR: offen.
+→ Details: [docs/20-sessions/session-13-summary.md](docs/20-sessions/session-13-summary.md)
 
-**Tests (kumulativ):** ~448 API-Tests (~86%+ Stmt), ~505 Web-Tests (~90%+ Stmt). Gesamt: ~953 Tests.
+**Tests (kumulativ):** ~484 API-Tests (~86%+ Stmt), ~528 Web-Tests (~90%+ Stmt). Gesamt: ~1012 Tests.
 
 ---
 
