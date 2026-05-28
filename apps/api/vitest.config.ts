@@ -41,11 +41,15 @@ export default defineConfig({
         'src/modules/products/dto/**',
         'src/modules/projects/dto/**',
         'src/modules/email/dto/**',
+        'src/modules/campaigns/dto/**',
         // BullMQ processors — thin dispatcher wrappers, logic is in services
         'src/modules/email/email-sync.processor.ts',
         'src/modules/email/email-poll.processor.ts',
+        'src/modules/campaigns/campaign-send.processor.ts',
         // Webhook controller — integration-tested via HTTP, not unit-testable (PubSub JWT)
         'src/modules/email/email-webhooks.controller.ts',
+        // Public tracking controller — HTML responses, exercised via integration tests
+        'src/modules/campaigns/campaign-tracking.controller.ts',
         // Thin external-API adapter: wraps googleapis + Microsoft Graph; exercised by integration tests
         'src/modules/email/email-sync.service.ts',
         // Booking module — public Calendly-style endpoints, exercised via integration tests

@@ -17,6 +17,7 @@ import { FormsModule } from './modules/forms/forms.module';
 import { LeadsModule } from './modules/leads/leads.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
 import { ProductsModule } from './modules/products/products.module';
+import { CampaignsModule } from './modules/campaigns/campaigns.module';
 import { EmailModule } from './modules/email/email.module';
 import { ProjectsModule } from './modules/projects/projects.module';
 import { PipelinesModule } from './modules/pipelines/pipelines.module';
@@ -60,6 +61,7 @@ import { RedisModule } from './redis/redis.module';
     ProductsModule,
     ProjectsModule,
     EmailModule,
+    CampaignsModule,
   ],
   controllers: [HealthController],
   providers: [
