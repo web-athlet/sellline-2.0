@@ -405,9 +405,9 @@ JSON: { "suggestions": [{ "subject": "...", "reasoning": "warum", "estimatedOpen
     ]);
   }
 
-  async trackClick(token: string, url: string): Promise<string> {
+  async trackClick(token: string, url: string): Promise<string | null> {
     const parsed = this.validateTrackingToken(token);
-    if (!parsed || parsed.action !== 'click') return url;
+    if (!parsed || parsed.action !== 'click') return null;
 
     const contact = await this.prisma.campaignContact.findFirst({
       where: { campaignId: parsed.campaignId, personId: parsed.personId },

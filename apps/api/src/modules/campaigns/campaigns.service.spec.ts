@@ -349,9 +349,9 @@ describe('CampaignsService', () => {
       );
     });
 
-    it('returns url unchanged on invalid token', async () => {
+    it('returns null on invalid token (prevents open redirect)', async () => {
       const url = await service.trackClick('bad', 'https://fallback.com');
-      expect(url).toBe('https://fallback.com');
+      expect(url).toBeNull();
     });
   });
 

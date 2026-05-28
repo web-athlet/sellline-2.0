@@ -63,7 +63,8 @@ export class CampaignTrackingController {
     @Query('url') url: string,
   ): Promise<{ url: string; statusCode: number }> {
     if (!url) throw new BadRequestException('url query param required');
-    const destination = await this.campaigns.trackClick(token, url).catch(() => url);
+    const destination = await this.campaigns.trackClick(token, url).catch(() => null);
+    if (!destination) throw new BadRequestException('Invalid tracking token');
     return { url: destination, statusCode: 302 };
   }
 
