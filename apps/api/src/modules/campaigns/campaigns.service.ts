@@ -529,9 +529,9 @@ JSON: { "suggestions": [{ "subject": "...", "reasoning": "warum", "estimatedOpen
     firstName: string,
     orgName: string,
   ): string {
-    const openToken = this.generateTrackingToken(campaignId, personId, 'open');
-    const clickToken = this.generateTrackingToken(campaignId, personId, 'click');
-    const unsubToken = this.generateTrackingToken(campaignId, personId, 'unsub');
+    const openSig = this.generateTrackingToken(campaignId, personId, 'open');
+    const clickSig = this.generateTrackingToken(campaignId, personId, 'click');
+    const unsubSig = this.generateTrackingToken(campaignId, personId, 'unsub');
 
     let html = bodyHtml
       .replace(/\{\{firstName\}\}/g, firstName)
@@ -539,18 +539,18 @@ JSON: { "suggestions": [{ "subject": "...", "reasoning": "warum", "estimatedOpen
 
     // Wrap links with click tracking
     html = html.replace(/<a\s+([^>]*?)href="([^"]+)"([^>]*?)>/gi, (_, pre, url, post) => {
-      const tracked = `${this.apiUrl}/api/v1/public/track/click/${clickToken}?url=${encodeURIComponent(url)}`;
+      const tracked = `${this.apiUrl}/api/v1/public/track/click/${clickSig}?url=${encodeURIComponent(url)}`;
       return `<a ${pre}href="${tracked}"${post}>`;
     });
 
     // Add unsubscribe footer
     html += `
 <div style="margin-top:32px;padding-top:16px;border-top:1px solid #eee;font-size:12px;color:#999;text-align:center;">
-  <a href="${this.apiUrl}/api/v1/public/unsubscribe/${unsubToken}" style="color:#999;">Abmelden / Unsubscribe</a>
+  <a href="${this.apiUrl}/api/v1/public/unsubscribe/${unsubSig}" style="color:#999;">Abmelden / Unsubscribe</a>
 </div>`;
 
     // Add open-tracking pixel at the bottom
-    html += `<img src="${this.apiUrl}/api/v1/public/track/open/${openToken}" width="1" height="1" alt="" style="display:none;" />`;
+    html += `<img src="${this.apiUrl}/api/v1/public/track/open/${openSig}" width="1" height="1" alt="" style="display:none;" />`;
 
     return html;
   }
