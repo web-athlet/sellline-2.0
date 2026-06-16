@@ -2,8 +2,8 @@ import ws from 'k6/ws';
 import { check, sleep } from 'k6';
 
 // WebSocket Pulse-Feed — 500 concurrent connections, 10 min (Session 16a, Block 7).
-// Uses the Engine.IO/Socket.IO websocket transport. The token is sent in the
-// connect handshake query (the gateway also accepts `auth.token`).
+// Uses the Engine.IO/Socket.IO websocket transport. The k6 scaffold sends the
+// token through the Authorization header, which the gateway accepts.
 // Run: TEST_JWT=<token> WS_URL=ws://localhost:3001 k6 run k6/ws-pulse-load.js
 export const options = {
   vus: 500,
@@ -18,8 +18,13 @@ const WS_URL = __ENV.WS_URL || 'ws://localhost:3001';
 
 export default function () {
   // Socket.IO v4 websocket endpoint.
-  const url = `${WS_URL}/socket.io/?EIO=4&transport=websocket&token=${__ENV.TEST_JWT}`;
-  const res = ws.connect(url, {}, (socket) => {
+  const url = `${WS_URL}/socket.io/?EIO=4&transport=websocket`;
+  const params = {
+    headers: {
+      Authorization: `Bearer ${__ENV.TEST_JWT}`,
+    },
+  };
+  const res = ws.connect(url, params, (socket) => {
     socket.on('open', () => {
       // Engine.IO probe + Socket.IO namespace connect.
       socket.send('2probe');
