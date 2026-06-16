@@ -13,6 +13,7 @@ import {
 import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
+import { generateCsrfToken } from '../../common/csrf/csrf.config';
 import { Public } from './decorators/public.decorator';
 import { CurrentUser, type AuthenticatedUser } from './decorators/current-user.decorator';
 import { JwtPre2FAGuard } from './guards/jwt-pre-2fa.guard';
@@ -29,12 +30,22 @@ import type { OAuthProfileSummary } from './auth.types';
 
 const REFRESH_COOKIE = 'rt';
 const STRICT_THROTTLE = { default: { limit: 10, ttl: 15 * 60 * 1000 } };
+// Brute-force protection: tighter than STRICT for the most-attacked routes.
+const LOGIN_THROTTLE = { default: { limit: 5, ttl: 15 * 60 * 1000 } };
+const RESET_THROTTLE = { default: { limit: 3, ttl: 60 * 60 * 1000 } };
 
 @Controller({ path: 'auth', version: '1' })
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
 
   // ── Public auth endpoints ───────────────────────────────────────────────
+
+  /** Issues a CSRF token + cookie for the SPA to send as X-CSRF-Token (ADR-0003). */
+  @Public()
+  @Get('csrf')
+  csrf(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    return { csrfToken: generateCsrfToken(req, res) };
+  }
 
   @Public()
   @Throttle(STRICT_THROTTLE)
@@ -46,7 +57,7 @@ export class AuthController {
   }
 
   @Public()
-  @Throttle(STRICT_THROTTLE)
+  @Throttle(LOGIN_THROTTLE)
   @HttpCode(HttpStatus.OK)
   @Post('login')
   async login(@Body() body: LoginDto, @Res({ passthrough: true }) res: Response) {
@@ -90,7 +101,7 @@ export class AuthController {
   }
 
   @Public()
-  @Throttle(STRICT_THROTTLE)
+  @Throttle(RESET_THROTTLE)
   @HttpCode(HttpStatus.NO_CONTENT)
   @Post('forgot-password')
   async forgotPassword(@Body() body: ForgotPasswordDto) {

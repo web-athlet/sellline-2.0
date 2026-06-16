@@ -30,6 +30,7 @@ summary: "Vollstaendiger Index aller Second-Brain-Dokumente."
 | [session-12-summary.md](20-sessions/session-12-summary.md) | completed | M5 E-Mail-Campaigns vollständig: DSGVO-Validierung, HMAC-Tracking-Tokens, BullMQ-Batch-Versand, GPT-4o Betreffzeilen, 4-Schritt-Wizard, Drag-Drop-Editor. 13 Endpoints. 7/7 ACs. ~953 Tests. |
 | [session-13-summary.md](20-sessions/session-13-summary.md) | completed | M9 Insights & Analytics vollständig: 8 Standard-Reports, KI-Verlust-Analyse (Cron + manuell, DSGVO-konform), Dashboard-Builder (react-grid-layout v2, 12 Widgets, localStorage). 3 Endpoints. 2/2 ACs. ~1012 Tests. |
 | [session-14-summary.md](20-sessions/session-14-summary.md) | completed | KI-Agenten vollständig: Enrichment-Worker (Serper→Scrape→GPT-4o→Organization+pgvector), regelbasiertes Lead-Scoring (Auto-Convert ≥80), Ghosting-Detection (täglicher Cron), Budget-Wächter. Migration: Lead.score, Deal.ghostedAt, AIInsight.deletedAt + HNSW-Index (P6/D1). 8/8 ACs. 52 neue AI-Tests. |
+| [session-15-summary.md](20-sessions/session-15-summary.md) | completed | Security & DSGVO-Härtung (Querschnitt, 10 Blocks): Audit-Log-Interceptor (+7y-Retention), GDPR-Export Art. 20 (Streaming-ZIP) + Hard-Delete Art. 17 (env-gated), Redis-Throttler + Per-User-Guard, Security-Headers, CSRF (csrf-csrf), zentraler DOMPurify-Sanitizer, RBAC-Lückenschluss (#31), Dependabot+Snyk, Passwort-Policy (min-12) + Lockout + env-gated HIBP. Migration: User.failedLoginAttempts/lockedUntil. 3 ACs + 7 Blocks. 596 API/537 Web-Tests. |
 
 ## Reviews (30-reviews/)
 

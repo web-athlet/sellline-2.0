@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { UserThrottlerGuard } from '../../common/throttler/user-throttler.guard';
 import { CampaignsController } from './campaigns.controller';
 import { CampaignsService } from './campaigns.service';
 
@@ -30,7 +31,11 @@ describe('CampaignsController', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [CampaignsController],
       providers: [{ provide: CampaignsService, useValue: mockService }],
-    }).compile();
+    })
+      // The send route uses UserThrottlerGuard (ThrottlerGuard DI); stub it out.
+      .overrideGuard(UserThrottlerGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     controller = module.get<CampaignsController>(CampaignsController);
     vi.clearAllMocks();

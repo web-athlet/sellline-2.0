@@ -1,0 +1,44 @@
+name: Snyk Security
+
+on:
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    # Weekly re-scan to catch newly-disclosed vulnerabilities in pinned deps.
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  security:
+    name: Dependency vulnerability scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Requires the SNYK_TOKEN repo secret. Skips cleanly on forks / when unset.
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.0
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Snyk (fail on HIGH/CRITICAL)
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: |
+          if [ -z "$SNYK_TOKEN" ]; then
+            echo "::warning::SNYK_TOKEN not set — skipping Snyk scan."
+            exit 0
+          fi
+          npx snyk test --all-projects --severity-threshold=high

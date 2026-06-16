@@ -1,7 +1,7 @@
 # NextGen CRM — Claude Code Context
 
-> **v4.13** | Stand: 2026-06-16 | Aktive Session: Session 15 (Security & DSGVO-Härtung) | Branch: —
-> Letztes Update: 2026-06-16 (Session 14 KI-Agenten — Enrichment, Scoring, Ghosting vollständig)
+> **v4.14** | Stand: 2026-06-16 | Aktive Session: Session 16a (Testing & Performance) | Branch: feature/session-15-security
+> Letztes Update: 2026-06-16 (Session 15 Security & DSGVO-Härtung — Audit-Log, GDPR-Export/Erasure, CSRF, Rate-Limits, Lockout vollständig)
 
 ## Mission
 AI-natives B2B-CRM mit 10 Modulen + 3 KI-Agenten. Orientiert an Pipedrive,
@@ -50,7 +50,7 @@ nextgen-crm/
 | 12 | M5 E-Mail-Campaigns | ✅ | feature/session-12-campaigns | 7/7 |
 | 13 | M9 Insights & Analytics | ✅ | feature/session-13-insights | 2/2 |
 | 14 | KI-Agenten (Enrichment, Scoring, Ghosting) | ✅ | feature/session-14-ai-agents | 8/8 |
-| 15 | Security & DSGVO-Härtung | ⬜ | — | — |
+| 15 | Security & DSGVO-Härtung | ✅ | feature/session-15-security | 10/10 (3 AC + 7 Blocks) |
 | 16a | Testing & Performance | ⬜ | — | — |
 | 16b | PWA & CI/CD | ⬜ | — | — |
 
@@ -102,6 +102,8 @@ nextgen-crm/
 **Enums:** `Role`, `ActivityType`, `Priority`, `DiscountType`, `EnrichmentStatus`, `CampaignStatus`, `ProjectStatus`, `DealStatus`
 
 **Session 14 Feld-Ergänzungen (Migration `20260615120000_session14_ai_agents`):** `Lead.score`/`Lead.scoreUpdatedAt` (+Index), `Deal.ghostedAt` (+Index), `AIInsight.deletedAt` (+Index, Tech-Debt D1).
+
+**Session 15 Feld-Ergänzungen (Migration `20260616120000_session15_security`):** `User.failedLoginAttempts Int @default(0)` + `User.lockedUntil DateTime?` (Account-Lockout). Audit re-nutzt das bestehende `AuditLog`-Schema (`{before,after}` im `changes`-JSON); Hard-Delete nutzt bestehendes `deletedAt`. **Migration noch nicht angewendet** (lokale Creds, wie Tech-Debt #53).
 
 **pgvector:** `Organization.enrichmentEmbedding vector(1536)` (Extension v0.8.2 installiert). **HNSW**-Index `Organization_enrichmentEmbedding_hnsw` (`vector_cosine_ops`) seit Session 14 (Tech-Debt P6, raw-SQL).
 
@@ -179,24 +181,25 @@ nextgen-crm/
 58. **[TD-S14-01] Scoring Recency-Signal entwertet** — `lead.updatedAt` wird durch Enrichment unmittelbar vor dem Scoring gebumpt → `recencyDays ≈ 0` (quasi konstant +15). Eigenes „letzte echte Interaktion"-Feld statt `updatedAt` nutzen. Geplant Session 16a. (Deep-Review S14 A1)
 59. **[TD-S14-02] SSRF-Härtung Web-Scraper** — `web-scraper.ts` holt URLs ohne Private-IP-Blocklist (loopback/link-local/metadata). Private/reserved Ranges blocken, nur `http(s)`, keine internen Redirects. Geplant Session 15. (Deep-Review S14 S1)
 60. **[TD-S14-03] OpenAI Drittlandtransfer (DSGVO)** — Scrape-Text von „About/Team"-Seiten kann PII Dritter enthalten, der an OpenAI (US) geht + in `Organization.enrichedJson`/Embedding persistiert. DPA/ROPA + Rechtsgrundlage dokumentieren. Geplant Session 15. (Deep-Review S14 G1)
+61. **[TD-S15-04] Audit-Log speichert volle PII-Payloads** — `audit.util.ts` `redact()` strippt nur Secret-benannte Keys (`pass/token/secret/2fa/otp/code/...`), **nicht** PII (`email/firstName/lastName/phones`). Interceptor persistiert volle req-`body` + response-`after` jeder Mutation über 7 Jahre → Konflikt „Keine PII in Logs" + DSGVO Art. 5(1)(c) Datenminimierung. Fix: PII redaktieren/hashen oder Diff-only + ROPA-Doku. Geplant Session 16a. (Deep-Review S15 M1)
+62. **[TD-S15-05] GDPR-Export nicht auditiert** — Export ist `GET` (`gdpr.controller.ts:19`), wird vom `AuditLogInterceptor` (nur POST/PUT/PATCH/DELETE) übersprungen → Rechenschaftslücke Art. 5(2)/30 für sensible PII-Export-Handlung. Fix: expliziter `auditLog.create` (`action: 'GDPR_EXPORT'`, `recordId=userId`, ohne Nutzdaten). Geplant Session 16a. (Deep-Review S15 M2)
+63. **[TD-S15-06] `reset-password` ohne Per-Route-Throttle + O(100)-bcrypt-Schleife** — Endpoint trägt kein `@Throttle` (nur global 100/min IP); `resetPassword` bcrypt-vergleicht bis zu 100 offene Tokens (cost 10) → CPU-Amplifikation (~10k bcrypt-Ops/min/IP). Fix: `@Throttle(RESET_THROTTLE)` + selektiver Token-Lookup statt Vollscan. Geplant Session 16a. (Deep-Review S15 L1)
 
 ---
 
 ## Aktuelle Session-Notizen
-Aktive Session: Session 15 (Security & DSGVO-Härtung).
+Aktive Session: Session 16a (Testing & Performance).
 
-**Voraussetzungen erfüllt (aus Session 14):**
-- AiModule vollständig: 3 Agenten (Enrichment-Worker, Scoring-Worker, Ghosting-Cron) + Budget-Wächter
-- Migration `20260615120000_session14_ai_agents` erstellt (Lead.score, Deal.ghostedAt, AIInsight.deletedAt, HNSW-Index) — **noch nicht angewendet** (Tech-Debt #53)
-- Neue Env-Vars: `SERPER_API_KEY`, `AI_MONTHLY_BUDGET_USD`, `AI_AUTO_CONVERT_ENABLED`, `AI_DEFAULT_OWNER_EMAIL`, `AI_ALERT_EMAIL`
-- Vitest 1.6 → 3.2 Upgrade (api/web/utils)
+**Session 15 abgeschlossen:** Security & DSGVO-Härtung vollständig (10 Blocks). Audit-Log-Interceptor (+7y-Retention), GDPR-Export (Art. 20) + Hard-Delete-Cron (Art. 17, env-gated), Redis-Throttler + Per-User-Guard, Security-Headers, CSRF (csrf-csrf, ADR-0003), zentraler HTML-Sanitizer, RBAC-Lückenschluss (#31), Dependabot+Snyk, Passwort-Policy (min-12 + Lowercase) + Account-Lockout + env-gated HIBP. 3 ACs + 7 Blocks. PR: offen.
+→ Details: [docs/20-sessions/session-15-summary.md](docs/20-sessions/session-15-summary.md)
 
-**Session 14 abgeschlossen:** KI-Agenten (Enrichment, Scoring, Ghosting) + Budget-Wächter vollständig. 8/8 ACs. PR: offen.
-→ Details: [docs/20-sessions/session-14-summary.md](docs/20-sessions/session-14-summary.md)
+**Erledigte Tech-Debts:** #30 (Embed-Escaping), #31 (`@Roles()` Leads), #44 (`CSRF_SECRET`); #28/#38/#43 teilweise (Throttler global + Per-User). **Bewusst deferred:** RLS/Multi-Tenant (#19, kein `tenant_id`), Nonce-CSP (TD-S15-01), MinIO-Signed-Link-Export (TD-S15-03), HIBP/Live-Snyk (hinter Flags/Secrets).
 
-**Offene Punkte für Session 15:** Migration mit echten Creds anwenden (#53); Rate-Limits Public-Endpoints; `@Roles()`-Lücken (#31); DSGVO-Bewertung KI-Datenflüsse (#57).
+**Offene Punkte für Session 16a:** Migration `20260616120000_session15_security` (+ #53) mit echten Creds anwenden; Integration-Tests GDPR-Export-Stream + Throttler-429; Web-Coverage-Review; DSGVO-Bewertung KI-Datenflüsse (#57/TD-S14-03).
 
-**Tests (kumulativ):** ~528 API-Tests, ~487 Web-Tests (52 neue AI-Unit-Tests, 8 Spec-Dateien). Quality-Gate grün (10/10), Coverage ≥ 80 %, Branches ~81 %.
+**Neue Deps (Session 15):** `archiver@6` (CJS — v8 ist ESM-only und bricht den CJS-Build), `csrf-csrf`, `@nest-lab/throttler-storage-redis`, `ioredis` (api); `isomorphic-dompurify` (web).
+
+**Tests (kumulativ):** ~596 API-Tests, ~537 Web-Tests (neue Security-Specs: audit, gdpr, hard-delete, throttler, csrf, hibp, leads-controller, register-dto, security-headers, sanitize). Quality-Gate grün (10/10), Coverage Lines API 91.1 % / Web 88.7 % / Utils 100 %.
 
 ---
 
@@ -239,6 +242,11 @@ Aktive Session: Session 15 (Security & DSGVO-Härtung).
 | `AI_AUTO_CONVERT_ENABLED` | Auto-Konvertierung von Leads mit Score ≥80 in Person + Deal. Default `false`. | 14 |
 | `AI_DEFAULT_OWNER_EMAIL` | Owner für auto-konvertierte Deals. Leer → erster ADMIN/MANAGER-User. | 14 |
 | `AI_ALERT_EMAIL` | Optionaler Empfänger für KI-Budget-Alerts (über Mail-Transport; leer → nur Log). | 14 |
+| `CSRF_SECRET` | HMAC-Secret für CSRF-Double-Submit-Cookie (≥32 chars). Fallback: JWT_SECRET. Empfehlung: separater 32-Byte-Hex-String. | 15 |
+| `GDPR_HARD_DELETE_ENABLED` | Schaltet den Art.-17-Hard-Delete-Cron frei (`true`). Default `false` (Löschung irreversibel). | 15 |
+| `GDPR_HARD_DELETE_GRACE_DAYS` | Grace-Window (Tage) nach Soft-Delete bis zur endgültigen Löschung. Default `30`. | 15 |
+| `HIBP_CHECK_ENABLED` | HaveIBeenPwned-Passwortprüfung bei register/change/reset (k-anonymity, Egress zu api.pwnedpasswords.com). Default `false`. | 15 |
+| `AUDIT_RETENTION_YEARS` | Aufbewahrungsdauer der AuditLogs in Jahren (DSGVO Art. 5 + HGB). Default `7`. | 15 |
 
 ---
 

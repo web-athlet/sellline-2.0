@@ -5,6 +5,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { RefreshTokenService } from './services/refresh-token.service';
 import { TwoFactorService } from './services/two-factor.service';
+import { PwnedPasswordService } from './services/pwned-password.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtPre2FAStrategy } from './strategies/jwt-pre-2fa.strategy';
 import { JwtSetup2FAStrategy } from './strategies/jwt-setup-2fa.strategy';
@@ -31,6 +32,7 @@ if (process.env.MICROSOFT_OAUTH_CLIENT_ID) oauthProviders.push(MicrosoftStrategy
     AuthService,
     RefreshTokenService,
     TwoFactorService,
+    PwnedPasswordService,
     JwtStrategy,
     JwtPre2FAStrategy,
     JwtSetup2FAStrategy,
