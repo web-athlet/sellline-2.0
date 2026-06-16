@@ -91,11 +91,22 @@ export class FormsService {
     const form = await this.findOne(id);
     const webUrl = process.env.NEXT_PUBLIC_WEB_URL ?? 'http://localhost:3000';
     const embedUrl = `${webUrl}/f/${id}`;
+    // Escape interpolated values for the HTML attribute context to prevent
+    // attribute-injection via form.name (Tech-Debt #30).
     return {
       formId: id,
       formName: form.name,
       embedUrl,
-      snippet: `<iframe src="${embedUrl}" width="100%" height="600px" frameborder="0" title="${form.name}"></iframe>`,
+      snippet: `<iframe src="${escapeHtmlAttr(embedUrl)}" width="100%" height="600px" frameborder="0" title="${escapeHtmlAttr(form.name)}"></iframe>`,
     };
   }
+}
+
+/** Escapes a string for safe interpolation inside a double-quoted HTML attribute. */
+function escapeHtmlAttr(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
 }

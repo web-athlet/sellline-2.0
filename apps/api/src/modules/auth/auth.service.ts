@@ -14,6 +14,7 @@ import { EncryptionService } from '../../common/crypto/encryption.service';
 import { MailService } from '../../mail/mail.service';
 import { RefreshTokenService } from './services/refresh-token.service';
 import { TwoFactorService } from './services/two-factor.service';
+import { PwnedPasswordService } from './services/pwned-password.service';
 import type {
   AccessTokenPayload,
   OAuthProfileSummary,
@@ -28,6 +29,9 @@ const SETUP_2FA_TTL = '5m';
 const FORGOT_PASSWORD_FLOOR_MS = 200;
 const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000;
 const PASSWORD_RESET_BCRYPT_COST = 10;
+// Brute-force lockout: 5 failed attempts → 15-minute lock.
+const MAX_FAILED_ATTEMPTS = 5;
+const LOCK_DURATION_MS = 15 * 60 * 1000;
 
 export interface LoginOutcome {
   status: 'authenticated' | 'requires-2fa' | 'requires-2fa-setup';
@@ -61,6 +65,7 @@ export class AuthService {
     private readonly twoFactor: TwoFactorService,
     private readonly encryption: EncryptionService,
     private readonly mail: MailService,
+    private readonly pwned: PwnedPasswordService,
   ) {}
 
   // ── Registration ────────────────────────────────────────────────────────
@@ -70,6 +75,7 @@ export class AuthService {
       select: { id: true },
     });
     if (existing) throw new ConflictException('Email already registered');
+    await this.pwned.assertNotPwned(input.password);
 
     const password = await bcrypt.hash(input.password, PASSWORD_BCRYPT_COST);
     const user = await this.prisma.user.create({
@@ -105,10 +111,25 @@ export class AuthService {
         password: true,
         passwordChangedAt: true,
         twoFactorEnabled: true,
+        failedLoginAttempts: true,
+        lockedUntil: true,
       },
     });
-    if (!user || !(await bcrypt.compare(input.password, user.password))) {
+
+    if (user?.lockedUntil && user.lockedUntil > new Date()) {
+      throw new UnauthorizedException('Account temporarily locked due to failed attempts');
+    }
+
+    const passwordOk = user ? await bcrypt.compare(input.password, user.password) : false;
+    if (!user || !passwordOk) {
+      if (user) await this.registerFailedLogin(user.id, user.failedLoginAttempts ?? 0);
       throw new UnauthorizedException('Invalid credentials');
+    }
+    if ((user.failedLoginAttempts ?? 0) > 0 || user.lockedUntil) {
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { failedLoginAttempts: 0, lockedUntil: null },
+      });
     }
 
     const userPublic = {
@@ -136,6 +157,20 @@ export class AuthService {
       refreshCookie: success.refreshCookie,
       user: success.user,
     };
+  }
+
+  /** Increments the failed-attempt counter, locking the account at the threshold. */
+  private async registerFailedLogin(userId: string, current: number): Promise<void> {
+    const attempts = current + 1;
+    const locked = attempts >= MAX_FAILED_ATTEMPTS;
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        // Reset the counter once locked; it restarts after the lock expires.
+        failedLoginAttempts: locked ? 0 : attempts,
+        lockedUntil: locked ? new Date(Date.now() + LOCK_DURATION_MS) : null,
+      },
+    });
   }
 
   async loginAfter2FA(userId: string, code: string): Promise<AuthSuccess> {
@@ -250,6 +285,7 @@ export class AuthService {
       }
     }
     if (!matched) throw new BadRequestException('Invalid or expired reset token');
+    await this.pwned.assertNotPwned(newPassword);
 
     const passwordHash = await bcrypt.hash(newPassword, PASSWORD_BCRYPT_COST);
     const now = new Date();
@@ -289,6 +325,7 @@ export class AuthService {
     if (!user || !(await bcrypt.compare(oldPassword, user.password))) {
       throw new UnauthorizedException('Old password is invalid');
     }
+    await this.pwned.assertNotPwned(newPassword);
     const passwordHash = await bcrypt.hash(newPassword, PASSWORD_BCRYPT_COST);
     const now = new Date();
     await this.prisma.$transaction([

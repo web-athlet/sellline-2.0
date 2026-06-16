@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { CampaignStats } from '@/components/campaigns/CampaignStats';
 import { CampaignStatusBadge } from '@/components/campaigns/CampaignStatusBadge';
 import { campaignsKeys, getCampaign, sendCampaign, testSendCampaign } from '@/lib/campaigns-api';
+import { sanitizeHtml } from '@/lib/sanitize';
 
 export default function CampaignDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -149,7 +150,7 @@ export default function CampaignDetailPage() {
           <div className="p-4 bg-slate-50">
             <div
               className="mx-auto max-w-2xl rounded-lg bg-white p-6 shadow-sm text-sm"
-              dangerouslySetInnerHTML={{ __html: campaign.bodyHtml }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(campaign.bodyHtml) }}
             />
           </div>
         </div>

@@ -25,6 +25,8 @@ model User {
   avatarUrl             String?
   password              String
   passwordChangedAt     DateTime?
+  failedLoginAttempts   Int       @default(0)
+  lockedUntil           DateTime?
   twoFactorSecret       String?
   twoFactorEnabled      Boolean   @default(false)
   gmailTokenEncrypted   String?

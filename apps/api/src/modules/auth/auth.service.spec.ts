@@ -8,6 +8,7 @@ import { MailService } from '../../mail/mail.service';
 import { AuthService } from './auth.service';
 import { RefreshTokenService } from './services/refresh-token.service';
 import { TwoFactorService } from './services/two-factor.service';
+import { PwnedPasswordService } from './services/pwned-password.service';
 import type { PrismaService } from '../../prisma/prisma.service';
 
 beforeAll(() => {
@@ -27,6 +28,8 @@ interface UserRow {
   deletedAt: Date | null;
   gmailTokenEncrypted: string | null;
   outlookTokenEncrypted: string | null;
+  failedLoginAttempts?: number;
+  lockedUntil?: Date | null;
 }
 
 interface PasswordResetRow {
@@ -200,7 +203,9 @@ const buildSvc = (
   const refreshTokens = new RefreshTokenService(prisma);
   const twoFactor = new TwoFactorService(encryption);
   const jwt = new JwtService({ secret: process.env.JWT_SECRET! });
-  return new AuthService(prisma, jwt, refreshTokens, twoFactor, encryption, mail);
+  // HIBP disabled by default → assertNotPwned resolves without a network call.
+  const pwned = new PwnedPasswordService();
+  return new AuthService(prisma, jwt, refreshTokens, twoFactor, encryption, mail, pwned);
 };
 
 describe('AuthService', () => {
@@ -268,6 +273,37 @@ describe('AuthService', () => {
       const result = await svc.login({ email: 'a@x.de', password: 'Demo1234!' });
       expect(result.status).toBe('requires-2fa');
       expect(result.preAuthToken).toBeTruthy();
+    });
+
+    it('locks the account after 5 failed attempts', async () => {
+      const svc = buildSvc(env.prisma);
+      await svc.register({ email: 'a@x.de', password: 'Demo1234!', name: 'A' });
+      for (let i = 0; i < 5; i++) {
+        await expect(svc.login({ email: 'a@x.de', password: 'Wrong-1!' })).rejects.toThrow(
+          UnauthorizedException,
+        );
+      }
+      expect(env.users[0]!.lockedUntil).toBeInstanceOf(Date);
+      expect(env.users[0]!.lockedUntil!.getTime()).toBeGreaterThan(Date.now());
+    });
+
+    it('rejects login while locked even with the correct password', async () => {
+      const svc = buildSvc(env.prisma);
+      await svc.register({ email: 'a@x.de', password: 'Demo1234!', name: 'A' });
+      env.users[0]!.lockedUntil = new Date(Date.now() + 60_000);
+      await expect(svc.login({ email: 'a@x.de', password: 'Demo1234!' })).rejects.toThrow(
+        /locked/i,
+      );
+    });
+
+    it('resets the failed-attempt counter on a successful login', async () => {
+      const svc = buildSvc(env.prisma);
+      await svc.register({ email: 'a@x.de', password: 'Demo1234!', name: 'A' });
+      await expect(svc.login({ email: 'a@x.de', password: 'Wrong-1!' })).rejects.toThrow();
+      expect(env.users[0]!.failedLoginAttempts).toBe(1);
+      const result = await svc.login({ email: 'a@x.de', password: 'Demo1234!' });
+      expect(result.status).toBe('authenticated');
+      expect(env.users[0]!.failedLoginAttempts).toBe(0);
     });
   });
 

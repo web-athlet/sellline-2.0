@@ -11,8 +11,10 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { Role } from '@nextgen/db';
 import { AuthenticatedUser, CurrentUser } from '../auth/decorators/current-user.decorator';
+import { TWICE_PER_HOUR, UserThrottlerGuard } from '../../common/throttler/user-throttler.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { CampaignsService, type SendGridBounceEvent } from './campaigns.service';
@@ -80,6 +82,8 @@ export class CampaignsController {
   @Post(':id/send')
   @HttpCode(HttpStatus.ACCEPTED)
   @Roles(Role.ADMIN, Role.MANAGER)
+  @UseGuards(UserThrottlerGuard)
+  @Throttle(TWICE_PER_HOUR)
   send(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
     return this.campaigns.sendCampaign(id, user.id);
   }
