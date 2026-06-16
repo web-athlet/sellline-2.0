@@ -1,7 +1,7 @@
 # NextGen CRM — Claude Code Context
 
-> **v4.14** | Stand: 2026-06-16 | Aktive Session: Session 16a (Testing & Performance) | Branch: feature/session-15-security
-> Letztes Update: 2026-06-16 (Session 15 Security & DSGVO-Härtung — Audit-Log, GDPR-Export/Erasure, CSRF, Rate-Limits, Lockout vollständig)
+> **v4.15** | Stand: 2026-06-16 | Aktive Session: Session 16b (PWA & CI/CD) | Branch: feature/session-16a-testing
+> Letztes Update: 2026-06-16 (Session 16a Testing & Performance — testcontainers-Integration-Harness, Fishery-Factories, WS-Integration-Tests, parallele CI-Jobs + E2E/k6-Scaffolds; Quality-Gate 10/10 mit echtem Integration-Check)
 
 ## Mission
 AI-natives B2B-CRM mit 10 Modulen + 3 KI-Agenten. Orientiert an Pipedrive,
@@ -51,7 +51,7 @@ nextgen-crm/
 | 13 | M9 Insights & Analytics | ✅ | feature/session-13-insights | 2/2 |
 | 14 | KI-Agenten (Enrichment, Scoring, Ghosting) | ✅ | feature/session-14-ai-agents | 8/8 |
 | 15 | Security & DSGVO-Härtung | ✅ | feature/session-15-security | 10/10 (3 AC + 7 Blocks) |
-| 16a | Testing & Performance | ⬜ | — | — |
+| 16a | Testing & Performance | ✅ | feature/session-16a-testing | Foundation: Integration-Harness + Factories + WS + CI (E2E/k6 Scaffold) |
 | 16b | PWA & CI/CD | ⬜ | — | — |
 
 ⬜ TODO | 🔄 IN PROGRESS | ✅ DONE | 🔴 BLOCKED
@@ -184,22 +184,27 @@ nextgen-crm/
 61. **[TD-S15-04] Audit-Log speichert volle PII-Payloads** — `audit.util.ts` `redact()` strippt nur Secret-benannte Keys (`pass/token/secret/2fa/otp/code/...`), **nicht** PII (`email/firstName/lastName/phones`). Interceptor persistiert volle req-`body` + response-`after` jeder Mutation über 7 Jahre → Konflikt „Keine PII in Logs" + DSGVO Art. 5(1)(c) Datenminimierung. Fix: PII redaktieren/hashen oder Diff-only + ROPA-Doku. Geplant Session 16a. (Deep-Review S15 M1)
 62. **[TD-S15-05] GDPR-Export nicht auditiert** — Export ist `GET` (`gdpr.controller.ts:19`), wird vom `AuditLogInterceptor` (nur POST/PUT/PATCH/DELETE) übersprungen → Rechenschaftslücke Art. 5(2)/30 für sensible PII-Export-Handlung. Fix: expliziter `auditLog.create` (`action: 'GDPR_EXPORT'`, `recordId=userId`, ohne Nutzdaten). Geplant Session 16a. (Deep-Review S15 M2)
 63. **[TD-S15-06] `reset-password` ohne Per-Route-Throttle + O(100)-bcrypt-Schleife** — Endpoint trägt kein `@Throttle` (nur global 100/min IP); `resetPassword` bcrypt-vergleicht bis zu 100 offene Tokens (cost 10) → CPU-Amplifikation (~10k bcrypt-Ops/min/IP). Fix: `@Throttle(RESET_THROTTLE)` + selektiver Token-Lookup statt Vollscan. Geplant Session 16a. (Deep-Review S15 L1)
+64. **[Done für Test-Pfad Session 16a] TD#53** — Integration-Harness wendet alle Migrationen (inkl. S14+S15) via `prisma migrate deploy` auf den testcontainers-Postgres an (`apps/api/test/integration/global-setup.ts`). **Dev-`.env`-`DATABASE_URL` weiterhin ungültig** — für lokale Entwicklung weiter offen.
+65. **[TD-S16a-01] E2E-Scaffold nicht lauffähig** — `e2e/`-Specs (5 Happy-Paths × 3 Playwright-Projects) brauchen stabile `data-testid`-Hooks im Web + deterministischen E2E-Seed (eigene E2E-DB) + `playwright install`. CI-Job `e2e.yml` (nur `main` + dispatch) ist `continue-on-error: true` bis dahin. Geplant Session 16b.
+66. **[TD-S16a-02] `RedisService.onModuleDestroy` quit-Fehler** — `client.quit()` auf einem `lazyConnect`-Client mit `enableOfflineQueue:false` wirft „Stream isn't writeable", wenn nie verbunden (Graceful-Shutdown-Robustheit). Test-seitig in `closeTestApp` umgangen; Source-Härtung offen (`status`-Guard → `disconnect()`). Geplant Session 16b.
+67. **[TD-S16a-03] k6-Load-Tests nicht ausgeführt** — `k6/`-Skripte geschrieben, aber kein k6-Binary/keine Perf-Umgebung → p95-ACs (Contacts <300 ms, Kanban <500 ms, 500 WS-Conns) unbestätigt. In geeigneter Umgebung nachholen.
+68. **[Info Session 16a] `express@^4` als direkte Dep in `apps/api`** — war nur transitiv via `@nestjs/platform-express`; Vite konnte `express` beim Bündeln des vollen `AppModule` (12 `import { Request } from 'express'`) nicht auflösen. Bewusst auf v4 gepinnt (passt zu `@types/express@^4` + platform-express). Kein BLOCKER.
 
 ---
 
 ## Aktuelle Session-Notizen
-Aktive Session: Session 16a (Testing & Performance).
+Aktive Session: Session 16b (PWA & CI/CD).
 
-**Session 15 abgeschlossen:** Security & DSGVO-Härtung vollständig (10 Blocks). Audit-Log-Interceptor (+7y-Retention), GDPR-Export (Art. 20) + Hard-Delete-Cron (Art. 17, env-gated), Redis-Throttler + Per-User-Guard, Security-Headers, CSRF (csrf-csrf, ADR-0003), zentraler HTML-Sanitizer, RBAC-Lückenschluss (#31), Dependabot+Snyk, Passwort-Policy (min-12 + Lowercase) + Account-Lockout + env-gated HIBP. 3 ACs + 7 Blocks. PR: offen.
-→ Details: [docs/20-sessions/session-15-summary.md](docs/20-sessions/session-15-summary.md)
+**Session 16a abgeschlossen (Foundation-Scope):** Runnable Test-Foundation. testcontainers-Integration-Harness (`apps/api/test/integration/`, pgvector + Redis, Migrationen via `prisma migrate deploy` → **TD#53 für Test-Pfad gelöst**), Fishery-Test-Daten-Factories für 9 Haupt-Entities (`apps/api/test/factories/`), deterministische WS-Integration-Tests, parallele CI-Jobs (lint/typecheck/unit/integration/build) + main-only `e2e.yml`. **4 Integration-Suites / 10 Tests** (Deals, Contacts, GDPR-Export+429+RBAC-403, WebSocket). Playwright (5 Happy-Paths × 3 Projects) + k6 (3 Load-Skripte) als **Scaffold (nicht ausgeführt)**. Schema unverändert. PR: offen.
+→ Details: [docs/20-sessions/session-16a-summary.md](docs/20-sessions/session-16a-summary.md)
 
-**Erledigte Tech-Debts:** #30 (Embed-Escaping), #31 (`@Roles()` Leads), #44 (`CSRF_SECRET`); #28/#38/#43 teilweise (Throttler global + Per-User). **Bewusst deferred:** RLS/Multi-Tenant (#19, kein `tenant_id`), Nonce-CSP (TD-S15-01), MinIO-Signed-Link-Export (TD-S15-03), HIBP/Live-Snyk (hinter Flags/Secrets).
+**Erledigte Tech-Debts:** #53 (für Test-Pfad — Migrationen laufen gegen testcontainers; Dev-`.env` weiter offen). **Neue Tech-Debts:** TD-S16a-01 (E2E braucht `data-testid` + E2E-Seed), TD-S16a-02 (`RedisService.onModuleDestroy` quit-Fehler auf nie-verbundenem lazy-Client), TD-S16a-03 (k6-p95 nicht gemessen). **Bewusst nicht angefasst (Foundation-Scope):** vorgemerkte Coverage-Tech-Debts #13/#23/#24/#27/#42/#48/#37/#55 bleiben offen.
 
-**Offene Punkte für Session 16a:** Migration `20260616120000_session15_security` (+ #53) mit echten Creds anwenden; Integration-Tests GDPR-Export-Stream + Throttler-429; Web-Coverage-Review; DSGVO-Bewertung KI-Datenflüsse (#57/TD-S14-03).
+**Offene Punkte für Session 16b:** auf CI-Struktur aufbauen; E2E-`data-testid`-Hooks + deterministischer Seed; `RedisService`-Härtung (TD-S16a-02); k6-Perf-Run in geeigneter Umgebung; Dev-`.env`-`DATABASE_URL` (TD#53).
 
-**Neue Deps (Session 15):** `archiver@6` (CJS — v8 ist ESM-only und bricht den CJS-Build), `csrf-csrf`, `@nest-lab/throttler-storage-redis`, `ioredis` (api); `isomorphic-dompurify` (web).
+**Neue Deps (Session 16a):** `fishery`, `@faker-js/faker`, `testcontainers@^10` (v12 verlangt Node 22), `socket.io-client`, `express@^4.21.2` (war transitiv via platform-express; Vite-Auflösung beim AppModule-Bundle, auf v4 gepinnt) — alle `apps/api`; `@playwright/test` (Root-devDeps). Keine neuen Env-Variablen.
 
-**Tests (kumulativ):** ~596 API-Tests, ~537 Web-Tests (neue Security-Specs: audit, gdpr, hard-delete, throttler, csrf, hibp, leads-controller, register-dto, security-headers, sanitize). Quality-Gate grün (10/10), Coverage Lines API 91.1 % / Web 88.7 % / Utils 100 %.
+**Tests (kumulativ):** ~596 API-Unit, ~537 Web-Unit (unverändert) + **10 Integration-Tests (testcontainers)**. Quality-Gate grün (10/10) — „Integration"-Check jetzt real statt `1+1`-Placeholder. Coverage Lines API 91.1 % / Web 88.7 % / Utils 100 %.
 
 ---
 

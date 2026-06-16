@@ -11,48 +11,115 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  quality:
-    name: Lint · Typecheck · Test · Build
+  # 1. Lint and typecheck run in parallel (independent, fast).
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-
       - uses: pnpm/action-setup@v4
         with:
           version: 10.18.0
           run_install: false
-
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
           cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile
         env:
           HUSKY: 0
+      - run: pnpm lint
+      - run: pnpm format:check
 
-      - name: Lint
-        run: pnpm lint
+  typecheck:
+    name: Typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.0
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+        env:
+          HUSKY: 0
+      - run: pnpm typecheck
 
-      - name: Typecheck
-        run: pnpm typecheck
+  # 2. Unit tests + coverage. Coverage thresholds live in each package's
+  #    vitest.config.ts (lines/functions/branches/statements), so a coverage
+  #    drop fails this job and blocks the merge.
+  unit:
+    name: Unit tests + coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.0
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+        env:
+          HUSKY: 0
+      - run: pnpm test:coverage
 
-      - name: Unit tests
-        run: pnpm test:unit
+  # 3. Integration tests against a throwaway Postgres (pgvector) + Redis spun up
+  #    by testcontainers on the runner's Docker daemon. Migrations are applied
+  #    inside the global-setup, so no external `services:` block is needed.
+  integration:
+    name: Integration tests (testcontainers)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [unit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.0
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+        env:
+          HUSKY: 0
+      - run: pnpm test:integration
 
-      - name: Coverage
-        run: pnpm test:coverage
+  # 4. Build last — confirms the production bundles compile.
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [lint, typecheck, unit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.0
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+        env:
+          HUSKY: 0
+      - run: pnpm build
 
-      - name: Integration smoke
-        run: pnpm test:integration
-
-      - name: Build
-        run: pnpm build
-
+  # Snyk runs in its own workflow (.github/workflows/snyk.yml).
   audit:
-    name: pnpm audit (high)
+    name: pnpm audit (critical)
     runs-on: ubuntu-latest
     timeout-minutes: 5
     continue-on-error: true
