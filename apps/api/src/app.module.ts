@@ -4,6 +4,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
+import { AiModule } from './ai/ai.module';
 import { CryptoModule } from './common/crypto/crypto.module';
 import { EventsModule } from './events/events.module';
 import { HealthController } from './health.controller';
@@ -66,6 +67,7 @@ import { RedisModule } from './redis/redis.module';
     EmailModule,
     CampaignsModule,
     InsightsModule,
+    AiModule,
   ],
   controllers: [HealthController],
   providers: [

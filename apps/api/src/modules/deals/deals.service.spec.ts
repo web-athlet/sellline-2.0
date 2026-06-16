@@ -297,7 +297,7 @@ describe('DealsService', () => {
           }),
         }),
       );
-      const createArgs = mockPrisma.dealProduct.create.mock.calls[0][0] as {
+      const createArgs = mockPrisma.dealProduct.create.mock.calls[0]![0] as {
         data: { total: Prisma.Decimal };
       };
       expect(createArgs.data.total.toString()).toBe('95');

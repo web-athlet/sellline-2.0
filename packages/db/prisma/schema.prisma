@@ -146,6 +146,9 @@ model Deal {
   score                Int       @default(0)
   scoreUpdatedAt       DateTime?
   ghostingSnoozedUntil DateTime?
+  // Set by the Ghosting-Detector cron (Session 14) when a deal goes >14 days
+  // without a response. Cleared manually / on resumed communication.
+  ghostedAt            DateTime?
   closingDate          DateTime?
   closedAt             DateTime?
   wonAt                DateTime?
@@ -172,6 +175,7 @@ model Deal {
   @@index([stageId, order])
   @@index([ownerId, updatedAt(sort: Desc)])
   @@index([rotIndicator, deletedAt])
+  @@index([ghostedAt])
   @@index([orgId])
   @@index([deletedAt])
 }
@@ -379,6 +383,9 @@ model Lead {
   convertedDealId  String?          @unique
   companyName      String?
   emailDomain      String?
+  // Rule-based lead score (0-100) maintained by the Scoring-Worker (Session 14).
+  score            Int              @default(0)
+  scoreUpdatedAt   DateTime?
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
   deletedAt        DateTime?
@@ -386,6 +393,7 @@ model Lead {
   form Form? @relation(fields: [formId], references: [id])
 
   @@index([enrichmentStatus, createdAt])
+  @@index([score])
   @@index([deletedAt])
 }
 
@@ -542,8 +550,10 @@ model AIInsight {
   content    Json
   validUntil DateTime?
   createdAt  DateTime  @default(now())
+  deletedAt  DateTime?
 
   @@index([type, createdAt(sort: Desc)])
+  @@index([deletedAt])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -31,6 +31,7 @@
     "@nextgen/utils": "workspace:*",
     "bcryptjs": "^2.4.3",
     "bullmq": "^5.76.8",
+    "cheerio": "^1.2.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "cookie-parser": "^1.4.7",
@@ -54,6 +55,7 @@
     "pino-pretty": "^11.2.2",
     "qrcode": "^1.5.4",
     "reflect-metadata": "^0.2.2",
+    "robots-parser": "^3.0.1",
     "rxjs": "^7.8.1",
     "socket.io": "^4.8.0",
     "zod": "^3.23.8"
@@ -75,10 +77,10 @@
     "@types/passport-jwt": "^4.0.1",
     "@types/qrcode": "^1.5.5",
     "@types/supertest": "^6.0.2",
-    "@vitest/coverage-v8": "^1.6.1",
+    "@vitest/coverage-v8": "^3.2.6",
     "supertest": "^7.0.0",
     "typescript": "^5.4.5",
     "unplugin-swc": "^1.5.1",
-    "vitest": "^1.6.1"
+    "vitest": "^3.2.6"
   }
 }
