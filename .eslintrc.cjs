@@ -37,5 +37,10 @@ module.exports = {
         '@typescript-eslint/no-explicit-any': 'off',
       },
     },
+    {
+      // k6 load scripts run in the k6 (Sobek) runtime, not Node — declare its globals.
+      files: ['k6/**/*.js'],
+      globals: { __ENV: 'readonly', __VU: 'readonly', __ITER: 'readonly' },
+    },
   ],
 };
