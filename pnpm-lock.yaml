@@ -448,8 +448,8 @@ importers:
         specifier: ^4.19.2
         version: 4.21.0
       uuid:
-        specifier: ^11.0.3
-        version: 11.1.1
+        specifier: ^14.0.0
+        version: 14.0.0
       vitest:
         specifier: ^3.2.6
         version: 3.2.6(@types/node@20.19.40)(jiti@2.6.1)(jsdom@29.1.1(@noble/hashes@1.8.0))(terser@5.47.1)(tsx@4.21.0)(yaml@2.8.4)
@@ -6613,8 +6613,8 @@ packages:
     deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
-  uuid@11.1.1:
-    resolution: {integrity: sha512-vIYxrBCC/N/K+Js3qSN88go7kIfNPssr/hHCesKCQNAjmgvYS2oqr69kIufEG+O4+PfezOH4EbIeHCfFov8ZgQ==}
+  uuid@14.0.0:
+    resolution: {integrity: sha512-Qo+uWgilfSmAhXCMav1uYFynlQO7fMFiMVZsQqZRMIXp0O7rR7qjkj+cPvBHLgBqi960QCoo/PH2/6ZtVqKvrg==}
     hasBin: true
 
   uuid@8.3.2:
@@ -13793,7 +13793,7 @@ snapshots:
 
   uuid@10.0.0: {}
 
-  uuid@11.1.1: {}
+  uuid@14.0.0: {}
 
   uuid@8.3.2: {}
 
