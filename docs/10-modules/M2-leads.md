@@ -1,11 +1,11 @@
 ---
 title: "M2 Leads und Webformulare"
-tags: [module, m2, leads, webforms, enrichment, dnd, bullmq]
+tags: [module, m2, leads, webforms, enrichment, scoring, dnd, bullmq, ai]
 status: implemented
 session: 8
 related: [M3-deals.md, M8-contacts.md]
-last_updated: 2026-05-21
-summary: "FormsModule + LeadsModule + PublicModule vollständig implementiert in Session 8: embeddable Webformulare, DnD FormBuilder, BullMQ lead-enrichment Stub, lead:enriched WS-Event, atomare convert-Transaktion (Person + Deal). AC-011 ✅."
+last_updated: 2026-06-16
+summary: "FormsModule + LeadsModule + PublicModule vollständig implementiert in Session 8: embeddable Webformulare, DnD FormBuilder, BullMQ lead-enrichment Stub, lead:enriched WS-Event, atomare convert-Transaktion (Person + Deal). AC-011 ✅. Session 14: KI-Enrichment-Worker + regelbasiertes Lead-Scoring (Lead.score) ergänzt."
 ---
 
 # M2 Leads und Webformulare
@@ -13,6 +13,12 @@ summary: "FormsModule + LeadsModule + PublicModule vollständig implementiert in
 ## Status
 
 **Implementiert in Session 8** — [session-08-summary.md](../20-sessions/session-08-summary.md)
+**Erweitert in Session 14** (KI-Agenten) — [session-14-summary.md](../20-sessions/session-14-summary.md)
+
+### Session 14 — KI-Enrichment & Scoring (`apps/api/src/ai/`)
+- **Enrichment-Worker** konsumiert die `lead-enrichment`-Queue (Producer = `LeadsService` aus S8): Serper-Search → robots.txt-konformer Web-Scraper → GPT-4o JSON-Extraktion → `Organization`-Upsert (per Domain) + pgvector-Embedding. Schreibt `Lead.enrichedJson` + `AIInsight(type:'enrichment')`. Fällt ohne Serper/OpenAI auf `partial` zurück (Lead läuft durch). Retry: 3 Attempts, exponential Backoff, `removeOnFail` als DLQ.
+- **Scoring-Worker** (neue Queue `lead-scoring`, debounced 30 s): deterministisches `Lead.score` (0–100) aus Fit/Engagement/Recency/Profile — **kein LLM**. Optionale Auto-Konvertierung ≥80 hinter `AI_AUTO_CONVERT_ENABLED`.
+- **Neue Felder**: `Lead.score Int @default(0)`, `Lead.scoreUpdatedAt DateTime?` (+ Index `Lead_score_idx`) — Migration `20260615120000_session14_ai_agents`.
 
 ---
 
