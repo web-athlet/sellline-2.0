@@ -141,7 +141,7 @@ describe('CampaignsService', () => {
       );
 
       expect(result).toEqual(created);
-      const callData = prismaMock.campaign.create.mock.calls[0][0].data;
+      const callData = prismaMock.campaign.create.mock.calls[0]![0].data;
       expect(callData.bodyHtml).not.toContain('<script>');
     });
   });

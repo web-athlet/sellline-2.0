@@ -1,12 +1,12 @@
 ---
 title: "M3 — Deals / Pipeline"
-tags: [module, kritischer-pfad, m3, deals, kanban, pipeline, dnd]
-status: planned
+tags: [module, kritischer-pfad, m3, deals, kanban, pipeline, dnd, ghosting]
+status: implemented
 session: 5
 related: [M1-pulse-feed, M7-activities, M8-contacts, M10-products]
 ac: [AC-002, AC-003, AC-004, AC-005]
-last_updated: 2026-05-07
-summary: "Kanban-Board mit @dnd-kit DnD, 6 Stages, Pipeline-Value server-seitig, Rot-Indikator, Ghosting-Flag."
+last_updated: 2026-06-16
+summary: "Kanban-Board mit @dnd-kit DnD, 6 Stages, Pipeline-Value server-seitig, Rot-Indikator, Ghosting-Flag. Implementiert in Session 5; Ghosting-Detection in Session 14 (Deal.ghostedAt via täglichem Cron)."
 ---
 
 # M3 — Deals / Pipeline (Kritischer Pfad P0)
@@ -25,8 +25,11 @@ Zentraler Ausgangspunkt fuer Daily Sales Work.
 3. **Rot-Indikator** — Deal ohne Activity seit N Tagen (per Pipeline konfigurierbar).
    N Tage = `rot_indicator: true`.
 4. **DnD-Reaktion** — max 16ms (1 Frame bei 60fps) — @dnd-kit pflicht.
-5. **Ghosting** — separater Agent, setzt `isGhosted: true` nach 14 Tagen.
-   Deals in Stage "Abschluss" sind NICHT ghostable.
+5. **Ghosting** — separater Agent (Session 14, `GhostingService`), setzt `Deal.ghostedAt`
+   nach >14 Tagen ohne Antwort (täglicher Cron `0 6 * * *` UTC) + erstellt eine Follow-up-
+   `Activity` (type `TASK`, idempotent). Deals in der letzten Stage je Pipeline sowie
+   won/lost/snoozed sind NICHT ghostable. Last-Touch wird zur Cron-Zeit aus Activities +
+   eingehenden E-Mails berechnet (kein `lastResponseAt`-Feld).
 6. **Soft-Delete** — `deletedAt` IMMER in WHERE-Clause.
 
 ## Datenmodell

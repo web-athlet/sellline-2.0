@@ -1,7 +1,7 @@
 # NextGen CRM — Claude Code Context
 
-> **v4.12** | Stand: 2026-05-29 | Aktive Session: Session 14 (KI-Agenten) | Branch: —
-> Letztes Update: 2026-05-29 (Session 13 M9 Insights & Analytics — vollständig)
+> **v4.13** | Stand: 2026-06-16 | Aktive Session: Session 15 (Security & DSGVO-Härtung) | Branch: —
+> Letztes Update: 2026-06-16 (Session 14 KI-Agenten — Enrichment, Scoring, Ghosting vollständig)
 
 ## Mission
 AI-natives B2B-CRM mit 10 Modulen + 3 KI-Agenten. Orientiert an Pipedrive,
@@ -49,7 +49,7 @@ nextgen-crm/
 | 11 | M6 E-Mail-Sync — Kritischer Pfad | ✅ | feature/session-11-email | 4/4 |
 | 12 | M5 E-Mail-Campaigns | ✅ | feature/session-12-campaigns | 7/7 |
 | 13 | M9 Insights & Analytics | ✅ | feature/session-13-insights | 2/2 |
-| 14 | KI-Agenten (Enrichment, Scoring, Ghosting) | ⬜ | — | — |
+| 14 | KI-Agenten (Enrichment, Scoring, Ghosting) | ✅ | feature/session-14-ai-agents | 8/8 |
 | 15 | Security & DSGVO-Härtung | ⬜ | — | — |
 | 16a | Testing & Performance | ⬜ | — | — |
 | 16b | PWA & CI/CD | ⬜ | — | — |
@@ -101,7 +101,9 @@ nextgen-crm/
 
 **Enums:** `Role`, `ActivityType`, `Priority`, `DiscountType`, `EnrichmentStatus`, `CampaignStatus`, `ProjectStatus`, `DealStatus`
 
-**pgvector:** `Organization.enrichmentEmbedding vector(1536)` (Extension v0.8.2 installiert).
+**Session 14 Feld-Ergänzungen (Migration `20260615120000_session14_ai_agents`):** `Lead.score`/`Lead.scoreUpdatedAt` (+Index), `Deal.ghostedAt` (+Index), `AIInsight.deletedAt` (+Index, Tech-Debt D1).
+
+**pgvector:** `Organization.enrichmentEmbedding vector(1536)` (Extension v0.8.2 installiert). **HNSW**-Index `Organization_enrichmentEmbedding_hnsw` (`vector_cosine_ops`) seit Session 14 (Tech-Debt P6, raw-SQL).
 
 ---
 
@@ -167,22 +169,31 @@ nextgen-crm/
 48. **[Tech-Debt Session 13] DashboardBuilder + ChartWidget ohne Unit-Tests** — react-grid-layout ResizeObserver + Recharts SVG. Session 16a.
 49. **[Tech-Debt Session 13] InsightsReports ohne Pagination/Caching** — Wochenloop-Queries können bei großen Datenmengen langsam werden. Redis-Cache in Session 15.
 50. **[Tech-Debt Session 13] Kein Date-Preset für Reports** — Nur `from/to` ISO-Strings; keine Shortcuts wie `7d`, `30d`. UX-Verbesserung in Session 16a.
+51. **[Done Session 14] Tech-Debt #9 P6** — HNSW-Index `Organization_enrichmentEmbedding_hnsw` (`vector_cosine_ops`) via raw-SQL in Migration `20260615120000_session14_ai_agents`.
+52. **[Done Session 14] Tech-Debt #9 D1** — `AIInsight.deletedAt DateTime?` + Index migriert.
+53. **[BLOCKER-lite Session 14] Migration nicht angewendet** — lokale `.env`-`DATABASE_URL` ungültig (P1000). `prisma generate` lief; `pnpm --filter @nextgen/db prisma:migrate:deploy` mit gültigen Creds nachziehen (Session 15 / lokales Setup). Code typecheckt gegen den generierten Client.
+54. **[Tech-Debt Session 14] Kein Frontend für KI-Signale** — `Lead.score`-Badge, Ghosting-Indikator, Enrichment-Status im UI offen. Geplant Session 16a oder eigener PR.
+55. **[Tech-Debt Session 14] `serper.client.ts` + `web-scraper.ts` aus Unit-Coverage** — Live-Netzwerk-Wrapper, nur gemockt getestet; Integration-Tests Session 16a (analog `email-sync.service.ts`).
+56. **[Tech-Debt Session 14] Auto-Convert ohne Person-Dedupe** — `ScoringService.autoConvert` legt immer eine neue Person an (kein Match auf vorhandene `emails`). Bei aktivem `AI_AUTO_CONVERT_ENABLED` Duplikat-Risiko. Geplant Session 16a.
+57. **[Tech-Debt Session 14] PII an OpenAI** — Scrape-Snippets (öffentliche Web-Daten) gehen an GPT-4o; DSGVO-Bewertung/Dokumentation in Session 15.
 
 ---
 
 ## Aktuelle Session-Notizen
-Aktive Session: Session 14 (KI-Agenten: Enrichment, Scoring, Ghosting-Detection).
+Aktive Session: Session 15 (Security & DSGVO-Härtung).
 
-**Voraussetzungen erfüllt (aus Session 13):**
-- InsightsModule vollständig: 3 Endpoints, 8 Report-Typen, KI-Verlust-Analyse (Cron + manuell)
-- react-grid-layout v2 Dashboard mit 12 Widgets, localStorage-Persistenz
-- AIInsight-Model live (type: 'loss_analysis' schreibbar)
-- @nestjs/schedule installiert (Cron-Support für Session 14 wiederverwertbar)
+**Voraussetzungen erfüllt (aus Session 14):**
+- AiModule vollständig: 3 Agenten (Enrichment-Worker, Scoring-Worker, Ghosting-Cron) + Budget-Wächter
+- Migration `20260615120000_session14_ai_agents` erstellt (Lead.score, Deal.ghostedAt, AIInsight.deletedAt, HNSW-Index) — **noch nicht angewendet** (Tech-Debt #53)
+- Neue Env-Vars: `SERPER_API_KEY`, `AI_MONTHLY_BUDGET_USD`, `AI_AUTO_CONVERT_ENABLED`, `AI_DEFAULT_OWNER_EMAIL`, `AI_ALERT_EMAIL`
+- Vitest 1.6 → 3.2 Upgrade (api/web/utils)
 
-**Session 13 abgeschlossen:** M9 Insights & Analytics vollständig. 2/2 ACs. PR: offen.
-→ Details: [docs/20-sessions/session-13-summary.md](docs/20-sessions/session-13-summary.md)
+**Session 14 abgeschlossen:** KI-Agenten (Enrichment, Scoring, Ghosting) + Budget-Wächter vollständig. 8/8 ACs. PR: offen.
+→ Details: [docs/20-sessions/session-14-summary.md](docs/20-sessions/session-14-summary.md)
 
-**Tests (kumulativ):** ~484 API-Tests (~86%+ Stmt), ~528 Web-Tests (~90%+ Stmt). Gesamt: ~1012 Tests.
+**Offene Punkte für Session 15:** Migration mit echten Creds anwenden (#53); Rate-Limits Public-Endpoints; `@Roles()`-Lücken (#31); DSGVO-Bewertung KI-Datenflüsse (#57).
+
+**Tests (kumulativ):** ~528 API-Tests, ~487 Web-Tests (52 neue AI-Unit-Tests, 8 Spec-Dateien). Quality-Gate grün (10/10), Coverage ≥ 80 %, Branches ~81 %.
 
 ---
 
@@ -220,6 +231,11 @@ Aktive Session: Session 14 (KI-Agenten: Enrichment, Scoring, Ghosting-Detection)
 | `OUTLOOK_SYNC_CALLBACK_URL` | Redirect-URL für Outlook OAuth E-Mail-Sync Callback | 11 |
 | `OPENAI_API_KEY` | OpenAI API Key für GPT-4o Thread-Summary + Campaign-Betreffzeilen | 11 |
 | `CAMPAIGN_TRACKING_SECRET` | HMAC-Secret für Tracking-Tokens (open/click/unsub). Fallback: JWT_SECRET. Empfehlung: separater 32-Byte-Hex-String. | 12 |
+| `SERPER_API_KEY` | Serper Google-Search API-Key für den Enrichment-Worker (optional — ohne Wert: `partial`-Enrichment, Lead läuft durch) | 14 |
+| `AI_MONTHLY_BUDGET_USD` | Monatliches USD-Budget für KI-Ausgaben. Enrichment-Queue pausiert bei 100 %, warnt bei 90 %. Default `100`. | 14 |
+| `AI_AUTO_CONVERT_ENABLED` | Auto-Konvertierung von Leads mit Score ≥80 in Person + Deal. Default `false`. | 14 |
+| `AI_DEFAULT_OWNER_EMAIL` | Owner für auto-konvertierte Deals. Leer → erster ADMIN/MANAGER-User. | 14 |
+| `AI_ALERT_EMAIL` | Optionaler Empfänger für KI-Budget-Alerts (über Mail-Transport; leer → nur Log). | 14 |
 
 ---
 

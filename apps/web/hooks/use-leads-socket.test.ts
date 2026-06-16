@@ -50,9 +50,9 @@ describe('useLeadsSocket', () => {
 
   it('invalidates leads queries on lead:enriched event', () => {
     renderHook(() => useLeadsSocket());
-    const handler = mockOn.mock.calls.find(([evt]: [string]) => evt === 'lead:enriched')?.[1] as (
-      e: unknown,
-    ) => void;
+    const handler = mockOn.mock.calls.find(
+      (call: unknown[]) => call[0] === 'lead:enriched',
+    )?.[1] as (e: unknown) => void;
     handler({ leadId: 'lead-1', status: 'DONE', ts: Date.now() });
     expect(mockInvalidate).toHaveBeenCalledWith({ queryKey: ['leads'] });
   });

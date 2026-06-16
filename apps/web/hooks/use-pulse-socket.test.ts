@@ -54,7 +54,7 @@ describe('usePulseSocket', () => {
     renderHook(() => usePulseSocket('2026-05-11', 'followups'));
 
     const handler = mockOn.mock.calls.find(
-      ([evt]: [string]) => evt === 'pulse:feed_updated',
+      (call: unknown[]) => call[0] === 'pulse:feed_updated',
     )?.[1] as (e: unknown) => void;
     handler({ userId: 'u', tab: 'followups', ts: Date.now() });
 
@@ -65,7 +65,7 @@ describe('usePulseSocket', () => {
     renderHook(() => usePulseSocket('2026-05-11', 'followups'));
 
     const handler = mockOn.mock.calls.find(
-      ([evt]: [string]) => evt === 'pulse:feed_updated',
+      (call: unknown[]) => call[0] === 'pulse:feed_updated',
     )?.[1] as (e: unknown) => void;
     handler({ userId: 'u', tab: 'missed', ts: Date.now() });
 
@@ -77,7 +77,7 @@ describe('usePulseSocket', () => {
     renderHook(() => usePulseSocket('2026-05-11', 'followups'));
 
     const handler = mockOn.mock.calls.find(
-      ([evt]: [string]) => evt === 'pulse:feed_updated',
+      (call: unknown[]) => call[0] === 'pulse:feed_updated',
     )?.[1] as (e: unknown) => void;
     handler({ userId: 'u', tab: null, ts: Date.now() });
 

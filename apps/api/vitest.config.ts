@@ -70,6 +70,12 @@ export default defineConfig({
         'src/modules/auth/strategies/microsoft.strategy.ts',
         'src/modules/auth/strategies/jwt-pre-2fa.strategy.ts',
         'src/modules/auth/strategies/jwt-setup-2fa.strategy.ts',
+        // Session 14 AI — external-I/O adapters (mocked fetch) + thin BullMQ processors
+        'src/ai/enrichment/serper.client.ts',
+        'src/ai/enrichment/web-scraper.ts',
+        'src/ai/enrichment/enrichment.processor.ts',
+        'src/ai/scoring/scoring.processor.ts',
+        'src/ai/openai.provider.ts',
       ],
       thresholds: {
         statements: 80,
