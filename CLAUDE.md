@@ -176,6 +176,9 @@ nextgen-crm/
 55. **[Tech-Debt Session 14] `serper.client.ts` + `web-scraper.ts` aus Unit-Coverage** — Live-Netzwerk-Wrapper, nur gemockt getestet; Integration-Tests Session 16a (analog `email-sync.service.ts`).
 56. **[Tech-Debt Session 14] Auto-Convert ohne Person-Dedupe** — `ScoringService.autoConvert` legt immer eine neue Person an (kein Match auf vorhandene `emails`). Bei aktivem `AI_AUTO_CONVERT_ENABLED` Duplikat-Risiko. Geplant Session 16a.
 57. **[Tech-Debt Session 14] PII an OpenAI** — Scrape-Snippets (öffentliche Web-Daten) gehen an GPT-4o; DSGVO-Bewertung/Dokumentation in Session 15.
+58. **[TD-S14-01] Scoring Recency-Signal entwertet** — `lead.updatedAt` wird durch Enrichment unmittelbar vor dem Scoring gebumpt → `recencyDays ≈ 0` (quasi konstant +15). Eigenes „letzte echte Interaktion"-Feld statt `updatedAt` nutzen. Geplant Session 16a. (Deep-Review S14 A1)
+59. **[TD-S14-02] SSRF-Härtung Web-Scraper** — `web-scraper.ts` holt URLs ohne Private-IP-Blocklist (loopback/link-local/metadata). Private/reserved Ranges blocken, nur `http(s)`, keine internen Redirects. Geplant Session 15. (Deep-Review S14 S1)
+60. **[TD-S14-03] OpenAI Drittlandtransfer (DSGVO)** — Scrape-Text von „About/Team"-Seiten kann PII Dritter enthalten, der an OpenAI (US) geht + in `Organization.enrichedJson`/Embedding persistiert. DPA/ROPA + Rechtsgrundlage dokumentieren. Geplant Session 15. (Deep-Review S14 G1)
 
 ---
 
