@@ -2,12 +2,16 @@
 # Build context MUST be the monorepo root (pnpm workspace):
 #   docker build -f apps/api/Dockerfile -t nextgen-api .
 #
-# KNOWN ISSUE (TD-S16b-01): @nextgen/db|types|utils expose TS source via
-# `main: ./src/index.ts`. swc/vitest/Next transpile that on the fly, but a plain
-# `node dist/main.js` cannot require TS. This image therefore ships the workspace
-# package SOURCE alongside the prod node_modules and relies on the registered swc
-# runtime hook — adequate for staging, but a clean prod image wants those packages
-# precompiled to JS (add `build` + `exports.import/require` to each). See runbook.
+# KNOWN ISSUE (TD-S16b-01) — THIS IMAGE DOES NOT START YET AS WRITTEN.
+# @nextgen/db|types|utils expose TS source via `main: ./src/index.ts`. swc/vitest/
+# Next transpile that on the fly, but `nest build` (swc builder) does NOT bundle —
+# the emitted dist/main.js still `require()`s the workspace packages, which resolve
+# to their TS `main`. A plain `node dist/main.js` cannot require TS, so it crashes on
+# the first workspace import. We ship the package SOURCE here so the fix is a one-step
+# follow-up, but there is NO TS runtime hook registered (the CMD is bare node).
+# Before any real deploy, EITHER precompile the packages to JS (add `build` +
+# `exports.import/require` to each — the clean fix, Session 17) OR register a runtime
+# hook (e.g. `node -r @swc/register dist/main.js`) and add it to the image. See runbook.
 ARG NODE_VERSION=20-alpine
 
 FROM node:${NODE_VERSION} AS base

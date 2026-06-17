@@ -32,8 +32,10 @@ const withPWA = withPWAInit({
       {
         // NetworkFirst for the live CRM resources — fresh data wins, cache is the
         // offline fallback. 5-min TTL keeps stale reads short-lived.
+        // The API uses URI versioning (setGlobalPrefix('api') + version '1'), so
+        // real routes are /api/v1/... — match any /api/vN/ to stay version-proof.
         urlPattern: new RegExp(
-          `^${apiCacheHost.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/api/(contacts|deals|leads)`,
+          `^${apiCacheHost.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/api/v\\d+/(contacts|deals|leads)`,
         ),
         handler: 'NetworkFirst',
         options: {
