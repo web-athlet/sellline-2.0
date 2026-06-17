@@ -1,0 +1,36 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nextgen
+  namespace: nextgen-prod
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/rate-limit: '100' # rps/IP — mirrors app throttler
+    nginx.ingress.kubernetes.io/ssl-redirect: 'true'
+    # WebSocket upgrade for the Socket.IO gateway on the API.
+    nginx.ingress.kubernetes.io/proxy-read-timeout: '3600'
+    nginx.ingress.kubernetes.io/proxy-send-timeout: '3600'
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts: [nextgen-crm.com, api.nextgen-crm.com]
+      secretName: nextgen-tls
+  rules:
+    - host: nextgen-crm.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: nextgen-web
+                port: { number: 80 }
+    - host: api.nextgen-crm.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: nextgen-api
+                port: { number: 80 }

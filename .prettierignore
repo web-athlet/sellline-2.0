@@ -7,6 +7,15 @@ coverage
 pnpm-lock.yaml
 *.min.js
 *.min.css
+
+# Generated PWA service-worker artifacts (built by @ducanh2912/next-pwa)
+apps/web/public/sw.js
+apps/web/public/sw.js.map
+apps/web/public/swe-worker-*.js
+apps/web/public/workbox-*.js
+apps/web/public/worker-*.js
+apps/web/public/fallback-*.js
+
 docs/
 .1PLAYBOOK/
 .claude/

@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nextgen-prod
+  labels:
+    app.kubernetes.io/part-of: nextgen-crm
+    # DSGVO: this namespace must only ever be scheduled in the EU (see nodeSelector
+    # on each Deployment). Documented here for auditors.
+    data-residency: eu

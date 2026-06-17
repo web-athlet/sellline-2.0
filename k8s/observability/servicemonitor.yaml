@@ -1,0 +1,21 @@
+# Prometheus Operator scrape config for the API.
+#
+# NOTE (TD-S16b-02): the /api/metrics endpoint is not implemented yet — structured
+# pino logs (→ Loki) and ingress-nginx/kube-state metrics are live today, but the
+# app-level histograms (HTTP latency, BullMQ queue depth) still need a prom-client
+# endpoint. This ServiceMonitor is ready for that endpoint; until it ships, the
+# api-metrics target will be DOWN (expected) and only the nginx/kube alerts fire.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: nextgen-api
+  namespace: nextgen-prod
+  labels:
+    release: kube-prometheus-stack
+spec:
+  selector:
+    matchLabels: { app: nextgen-api }
+  endpoints:
+    - port: http
+      path: /api/metrics
+      interval: 30s

@@ -1,0 +1,58 @@
+# Daily logical Postgres backup → S3-compatible EU bucket, 30-day retention.
+# Redis is NOT backed up (cache only, stateless). MinIO object storage relies on
+# its own cross-region replication within the EU (see disaster-recovery runbook).
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgres-backup
+  namespace: nextgen-prod
+spec:
+  schedule: '0 2 * * *' # 02:00 UTC daily
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 7
+  failedJobsHistoryLimit: 7
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 3600
+      template:
+        spec:
+          restartPolicy: Never
+          nodeSelector:
+            topology.kubernetes.io/region: eu-central-1 # DSGVO
+          containers:
+            - name: pg-dump
+              # postgres client + aws cli; pin to your registry mirror in prod.
+              image: ghcr.io/web-athlet/sellline-2.0/pg-backup:16
+              command: ['/bin/sh', '-c']
+              args:
+                - |
+                  set -euo pipefail
+                  STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
+                  FILE="nextgen-${STAMP}.dump"
+                  echo "Dumping database…"
+                  pg_dump --format=custom --no-owner --dbname="$DATABASE_URL" --file="/tmp/${FILE}"
+                  echo "Uploading to s3://${BACKUP_BUCKET}/postgres/${FILE}"
+                  aws s3 cp "/tmp/${FILE}" "s3://${BACKUP_BUCKET}/postgres/${FILE}" \
+                    --endpoint-url "$S3_ENDPOINT"
+                  echo "Pruning backups older than 30 days…"
+                  CUTOFF="$(date -u -d '30 days ago' +%Y%m%d || date -u -v-30d +%Y%m%d)"
+                  aws s3 ls "s3://${BACKUP_BUCKET}/postgres/" --endpoint-url "$S3_ENDPOINT" \
+                    | awk '{print $4}' | while read -r key; do
+                      kd="$(echo "$key" | sed -n 's/nextgen-\([0-9]\{8\}\).*/\1/p')"
+                      if [ -n "$kd" ] && [ "$kd" -lt "$CUTOFF" ]; then
+                        aws s3 rm "s3://${BACKUP_BUCKET}/postgres/${key}" --endpoint-url "$S3_ENDPOINT"
+                      fi
+                    done
+                  echo "Backup complete: ${FILE}"
+              env:
+                - name: DATABASE_URL
+                  valueFrom: { secretKeyRef: { name: nextgen-secrets, key: DATABASE_URL } }
+                - name: BACKUP_BUCKET
+                  valueFrom: { secretKeyRef: { name: nextgen-backup, key: BACKUP_BUCKET } }
+                - name: S3_ENDPOINT
+                  valueFrom: { secretKeyRef: { name: nextgen-backup, key: S3_ENDPOINT } }
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom: { secretKeyRef: { name: nextgen-backup, key: AWS_ACCESS_KEY_ID } }
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom: { secretKeyRef: { name: nextgen-backup, key: AWS_SECRET_ACCESS_KEY } }
