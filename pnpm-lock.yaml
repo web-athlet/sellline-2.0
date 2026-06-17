@@ -271,6 +271,9 @@ importers:
       '@vitest/coverage-v8':
         specifier: ^3.2.6
         version: 3.2.6(vitest@3.2.6(@types/node@20.19.40)(jiti@2.6.1)(jsdom@29.1.1(@noble/hashes@1.8.0))(terser@5.47.1)(tsx@4.21.0)(yaml@2.8.4))
+      dotenv-cli:
+        specifier: ^7.4.4
+        version: 7.4.4
       fishery:
         specifier: ^2.4.0
         version: 2.4.0

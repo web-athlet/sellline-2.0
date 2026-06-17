@@ -5,6 +5,10 @@
     "moduleResolution": "Node",
     "target": "ES2022",
     "outDir": "./dist",
+    // Resolve @nextgen/* via node_modules → built dist (package.json exports), not
+    // source. The swc `nest build` inlines tsconfig `paths`, which would otherwise
+    // rewrite these imports to packages/*/src/*.ts that Node cannot require.
+    "paths": {},
     "sourceMap": true,
     "declaration": false,
     "declarationMap": false,
