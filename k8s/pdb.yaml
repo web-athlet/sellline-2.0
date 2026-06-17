@@ -1,0 +1,20 @@
+# Keep at least 2 pods serving during voluntary disruptions (node drains, upgrades).
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: nextgen-web
+  namespace: nextgen-prod
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels: { app: nextgen-web }
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: nextgen-api
+  namespace: nextgen-prod
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels: { app: nextgen-api }

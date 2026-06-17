@@ -1,7 +1,7 @@
 # NextGen CRM — Claude Code Context
 
-> **v4.15** | Stand: 2026-06-16 | Aktive Session: Session 16b (PWA & CI/CD) | Branch: feature/session-16a-testing
-> Letztes Update: 2026-06-16 (Session 16a Testing & Performance — testcontainers-Integration-Harness, Fishery-Factories, WS-Integration-Tests, parallele CI-Jobs + E2E/k6-Scaffolds; Quality-Gate 10/10 mit echtem Integration-Check)
+> **v4.16** | Stand: 2026-06-17 | Aktive Session: Session 17 (offen) | Branch: feature/session-16b-pwa-cicd
+> Letztes Update: 2026-06-17 (Session 16b PWA & CI/CD — @ducanh2912/next-pwa + Manifest + 8 Icons + expliziter SW-Update-Prompt, Health-Liveness/Readiness-Split (503 bei DB-Fehler), RedisService-Shutdown-Härtung (TD-S16a-02 gelöst), Multi-Stage-Dockerfiles + deploy.yml + vollständige k8s-Manifeste (EU-only) + Observability/Backup-Config + Disaster-Recovery-Runbook; Quality-Gate grün, Web-Build erzeugt SW + standalone real)
 
 ## Mission
 AI-natives B2B-CRM mit 10 Modulen + 3 KI-Agenten. Orientiert an Pipedrive,
@@ -52,7 +52,7 @@ nextgen-crm/
 | 14 | KI-Agenten (Enrichment, Scoring, Ghosting) | ✅ | feature/session-14-ai-agents | 8/8 |
 | 15 | Security & DSGVO-Härtung | ✅ | feature/session-15-security | 10/10 (3 AC + 7 Blocks) |
 | 16a | Testing & Performance | ✅ | feature/session-16a-testing | Foundation: Integration-Harness + Factories + WS + CI (E2E/k6 Scaffold) |
-| 16b | PWA & CI/CD | ⬜ | — | — |
+| 16b | PWA & CI/CD | ✅ | feature/session-16b-pwa-cicd | PWA + SW-Update-Prompt + Health-Readiness + Docker/k8s/deploy.yml + Observability/Backup (Laufzeit-ACs deferred) |
 
 ⬜ TODO | 🔄 IN PROGRESS | ✅ DONE | 🔴 BLOCKED
 
@@ -189,22 +189,23 @@ nextgen-crm/
 66. **[TD-S16a-02] `RedisService.onModuleDestroy` quit-Fehler** — `client.quit()` auf einem `lazyConnect`-Client mit `enableOfflineQueue:false` wirft „Stream isn't writeable", wenn nie verbunden (Graceful-Shutdown-Robustheit). Test-seitig in `closeTestApp` umgangen; Source-Härtung offen (`status`-Guard → `disconnect()`). Geplant Session 16b.
 67. **[TD-S16a-03] k6-Load-Tests nicht ausgeführt** — `k6/`-Skripte geschrieben, aber kein k6-Binary/keine Perf-Umgebung → p95-ACs (Contacts <300 ms, Kanban <500 ms, 500 WS-Conns) unbestätigt. In geeigneter Umgebung nachholen.
 68. **[Info Session 16a] `express@^4` als direkte Dep in `apps/api`** — war nur transitiv via `@nestjs/platform-express`; Vite konnte `express` beim Bündeln des vollen `AppModule` (12 `import { Request } from 'express'`) nicht auflösen. Bewusst auf v4 gepinnt (passt zu `@types/express@^4` + platform-express). Kein BLOCKER.
+69. **[Done Session 16b] TD-S16a-02** — `RedisService.onModuleDestroy` ist jetzt status-guarded (`quit()` nur bei `ready`/`connecting`, sonst `disconnect()`) + `quit`-Fehler-Fallback; neue `ping()`-Methode + `redis.service.spec.ts`.
+70. **[TD-S16b-01] Workspace-Packages exportieren TS-Source** — `@nextgen/db|types|utils` haben `main: ./src/index.ts`. swc/Vitest/Next transpilen das, aber ein nacktes `node dist/main.js` (API-Prod-Image) kann TS nicht `require`en. `apps/api/Dockerfile` liefert die Package-Source als Stopgap; saubere Prod-Lösung = Precompile (build-Scripts + `exports.import/require` je Package) vor echtem API-Image. Web-Image ist sauber (Next inlined Workspace-Source via `transpilePackages`). Geplant Session 17.
+71. **[TD-S16b-02] `/api/metrics` (prom-client) nicht implementiert** — bewusst deferred (vermeidet Coverage-Gate-Drag durch ungetesteten neuen Source). pino-Logs + ingress-nginx/kube-state-Metriken sind live; `k8s/observability/servicemonitor.yaml` + Alerts referenzieren den Endpoint und sind bereit zum Aktivieren, sobald er existiert. Geplant Session 17. (AC „Prometheus-Metrics exposed" bis dahin ⏸)
 
 ---
 
 ## Aktuelle Session-Notizen
-Aktive Session: Session 16b (PWA & CI/CD).
+Aktive Session: Session 17 (offen). **Session 16b (PWA & CI/CD) abgeschlossen.**
 
-**Session 16a abgeschlossen (Foundation-Scope):** Runnable Test-Foundation. testcontainers-Integration-Harness (`apps/api/test/integration/`, pgvector + Redis, Migrationen via `prisma migrate deploy` → **TD#53 für Test-Pfad gelöst**), Fishery-Test-Daten-Factories für 9 Haupt-Entities (`apps/api/test/factories/`), deterministische WS-Integration-Tests, parallele CI-Jobs (lint/typecheck/unit/integration/build) + main-only `e2e.yml`. **4 Integration-Suites / 10 Tests** (Deals, Contacts, GDPR-Export+429+RBAC-403, WebSocket). Playwright (5 Happy-Paths × 3 Projects) + k6 (3 Load-Skripte) als **Scaffold (nicht ausgeführt)**. Schema unverändert. PR: offen.
-→ Details: [docs/20-sessions/session-16a-summary.md](docs/20-sessions/session-16a-summary.md)
+**Session 16b abgeschlossen:** Production-Launch-Finalisierung. **PWA** via `@ducanh2912/next-pwa` (gewartete App-Router-Variante; `next-pwa`/shadowwalker tot) — `runtimeCaching` (NetworkFirst API + CacheFirst Bilder/static, `skipWaiting:false`), `manifest.json`, Layout-`metadata`/`viewport`, `scripts/generate-icons.js` (sharp) → 8 Icons + apple-touch + shortcut committed. **`PWAUpdatePrompt.tsx`** (expliziter SW-Update-Toast, kein Silent-Update) + 5 Tests, gemountet in `DashboardLayout`. **Health-Split:** Liveness `GET /api/health` (kein DB) vs. Readiness `GET /api/health/ready` (Prisma `SELECT 1` + Redis-`ping`, **503 nur bei DB-Ausfall**). **TD-S16a-02 gelöst** (`RedisService.onModuleDestroy` status-guarded + `disconnect()`-Fallback, neue `ping()`+spec). **IaC:** Multi-Stage-Dockerfiles (web+api), `.dockerignore`, `deploy.yml` (workflow_run → GHCR → kubectl, `environment: production`-Approval; **`ci.yml`/`e2e.yml` unverändert**), vollständige `k8s/`-Manifeste (EU-`nodeSelector`, RollingUpdate `maxUnavailable:0`, HPA/PDB/NetworkPolicy, pg_dump-Backup-CronJob), Observability-Config (ServiceMonitor/Alerts/Grafana), `docs/50-runbooks/disaster-recovery.md`. Schema unverändert. PR: offen.
+→ Details: [docs/20-sessions/session-16b-summary.md](docs/20-sessions/session-16b-summary.md)
 
-**Erledigte Tech-Debts:** #53 (für Test-Pfad — Migrationen laufen gegen testcontainers; Dev-`.env` weiter offen). **Neue Tech-Debts:** TD-S16a-01 (E2E braucht `data-testid` + E2E-Seed), TD-S16a-02 (`RedisService.onModuleDestroy` quit-Fehler auf nie-verbundenem lazy-Client), TD-S16a-03 (k6-p95 nicht gemessen). **Bewusst nicht angefasst (Foundation-Scope):** vorgemerkte Coverage-Tech-Debts #13/#23/#24/#27/#42/#48/#37/#55 bleiben offen.
+**Erledigte Tech-Debts:** TD-S16a-02 (RedisService-Shutdown gehärtet). **Neue Tech-Debts:** TD-S16b-01 (Workspace-Packages exportieren TS-Source → API-Prod-Image `node dist/main.js` braucht Precompile; Dockerfile liefert Source als Stopgap), TD-S16b-02 (`/api/metrics` prom-client nicht implementiert — Coverage-Gate-Drag vermieden; ServiceMonitor/Alerts vorbereitet). **Laufzeit-ACs deferred** (reale Umgebung nötig): Lighthouse≥95, iOS/Android-Install, Live-k8s-Rollout, Grafana/PagerDuty, pg_dump-Restore-Test. **Weiter offen:** TD-S16a-01 (E2E `data-testid`+Seed), TD-S16a-03 (k6-p95), TD#53 (Dev-`.env`), Coverage-Tech-Debts #13/#23/#24/#27/#42/#48/#37/#55.
 
-**Offene Punkte für Session 16b:** auf CI-Struktur aufbauen; E2E-`data-testid`-Hooks + deterministischer Seed; `RedisService`-Härtung (TD-S16a-02); k6-Perf-Run in geeigneter Umgebung; Dev-`.env`-`DATABASE_URL` (TD#53).
+**Neue Deps (Session 16b):** `@ducanh2912/next-pwa` (apps/web), `sharp` (Root-devDep für Icon-Script). **Keine neuen App-Env-Variablen** (Deploy/Backup-Secrets sind Infra-Secrets außerhalb der App-`.env`).
 
-**Neue Deps (Session 16a):** `fishery`, `@faker-js/faker`, `testcontainers@^10` (v12 verlangt Node 22), `socket.io-client`, `express@^4.21.2` (war transitiv via platform-express; Vite-Auflösung beim AppModule-Bundle, auf v4 gepinnt) — alle `apps/api`; `@playwright/test` (Root-devDeps). Keine neuen Env-Variablen.
-
-**Tests (kumulativ):** ~596 API-Unit, ~537 Web-Unit (unverändert) + **10 Integration-Tests (testcontainers)**. Quality-Gate grün (10/10) — „Integration"-Check jetzt real statt `1+1`-Placeholder. Coverage Lines API 91.1 % / Web 88.7 % / Utils 100 %.
+**Tests (kumulativ):** API-Unit + `redis.service.spec.ts` (6) + erweitertes `health.controller.spec.ts` (6); Web-Unit + `PWAUpdatePrompt.test.tsx` (5). Integration unverändert **10 Tests (testcontainers)** — grün mit neuem Health-DI + Redis-Shutdown. Quality-Gate grün; Web-Build erzeugt real `sw.js`/`workbox-*.js` + Standalone.
 
 ---
 

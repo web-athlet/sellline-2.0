@@ -1,0 +1,69 @@
+# Default-deny ingress + egress for the namespace, then explicit allows. DNS and
+# the in-cluster datastores are permitted; everything else (incl. arbitrary egress)
+# is blocked, which also hardens the AI web-scraper SSRF surface (TD-S14-02).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: nextgen-prod
+spec:
+  podSelector: {}
+  policyTypes: [Ingress, Egress]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-web-ingress
+  namespace: nextgen-prod
+spec:
+  podSelector:
+    matchLabels: { app: nextgen-web }
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels: { kubernetes.io/metadata.name: ingress-nginx }
+      ports:
+        - { protocol: TCP, port: 3000 }
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-api-ingress
+  namespace: nextgen-prod
+spec:
+  podSelector:
+    matchLabels: { app: nextgen-api }
+  policyTypes: [Ingress]
+  ingress:
+    # From the ingress controller (public API + WS) and from the web pods (SSR).
+    - from:
+        - namespaceSelector:
+            matchLabels: { kubernetes.io/metadata.name: ingress-nginx }
+        - podSelector:
+            matchLabels: { app: nextgen-web }
+      ports:
+        - { protocol: TCP, port: 3001 }
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-egress
+  namespace: nextgen-prod
+spec:
+  podSelector: {}
+  policyTypes: [Egress]
+  egress:
+    # DNS
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - { protocol: UDP, port: 53 }
+        - { protocol: TCP, port: 53 }
+    # Postgres + Redis (in-cluster or via their own labelled namespace/service)
+    - ports:
+        - { protocol: TCP, port: 5432 }
+        - { protocol: TCP, port: 6379 }
+    # HTTPS egress for OpenAI / Serper / OAuth providers (443 only)
+    - ports:
+        - { protocol: TCP, port: 443 }

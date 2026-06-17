@@ -6,6 +6,7 @@ import { NavRail, type NavRailProps } from './NavRail';
 import { useUIStore } from '@/stores/ui-store';
 import { cn } from '@nextgen/utils';
 import { getUnreadCount } from '@/lib/email-api';
+import { PWAUpdatePrompt } from '@/components/pwa/PWAUpdatePrompt';
 
 interface DashboardLayoutProps extends NavRailProps {
   children: React.ReactNode;
@@ -99,6 +100,9 @@ export function DashboardLayout({
       >
         {children}
       </main>
+
+      {/* App-wide SW update toast — renders only when a new version is waiting */}
+      <PWAUpdatePrompt />
     </div>
   );
 }

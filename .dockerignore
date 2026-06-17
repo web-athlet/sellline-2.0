@@ -1,0 +1,20 @@
+**/node_modules
+**/.next
+**/dist
+**/coverage
+**/.turbo
+**/*.log
+.git
+.github
+docs
+e2e
+k6
+tests
+playwright-report
+test-results
+**/.env
+**/.env.*
+!**/.env.example
+# Generated PWA service-worker artifacts (rebuilt during image build)
+apps/web/public/sw.js
+apps/web/public/workbox-*.js

@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nextgen-api
+  namespace: nextgen-prod
+  labels: { app: nextgen-api }
+spec:
+  replicas: 3
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels: { app: nextgen-api }
+  template:
+    metadata:
+      labels: { app: nextgen-api }
+    spec:
+      nodeSelector:
+        topology.kubernetes.io/region: eu-central-1 # DSGVO: EU-only scheduling
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile: { type: RuntimeDefault }
+      containers:
+        - name: api
+          image: ghcr.io/web-athlet/sellline-2.0/nextgen-api:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3001
+          resources:
+            requests: { cpu: 250m, memory: 512Mi }
+            limits: { cpu: '1', memory: 1Gi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: { drop: ['ALL'] }
+          # Liveness = process up (cheap, no DB). Readiness = /ready (checks DB →
+          # 503 pulls the pod from the Service endpoints during a DB outage).
+          livenessProbe:
+            httpGet: { path: /api/health, port: 3001 }
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          readinessProbe:
+            httpGet: { path: /api/health/ready, port: 3001 }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
+          envFrom:
+            - secretRef: { name: nextgen-secrets }
+          env:
+            - { name: NODE_ENV, value: production }
+            - { name: PORT, value: '3001' }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nextgen-api
+  namespace: nextgen-prod
+spec:
+  type: ClusterIP
+  selector: { app: nextgen-api }
+  ports:
+    - { name: http, port: 80, targetPort: 3001 }

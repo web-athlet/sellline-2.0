@@ -44,7 +44,27 @@ export class RedisService implements OnModuleDestroy {
     }
   }
 
-  onModuleDestroy(): Promise<string> {
-    return this.client.quit();
+  /** Readiness probe — true only when Redis answers PONG. Never throws. */
+  async ping(): Promise<boolean> {
+    try {
+      return (await this.client.ping()) === 'PONG';
+    } catch {
+      return false;
+    }
+  }
+
+  // Graceful shutdown (TD-S16a-02): `quit()` on a lazyConnect client that never
+  // connected throws "Stream isn't writeable". Only quit when actually connected;
+  // otherwise tear the socket down synchronously with disconnect().
+  async onModuleDestroy(): Promise<void> {
+    if (this.client.status === 'ready' || this.client.status === 'connecting') {
+      try {
+        await this.client.quit();
+        return;
+      } catch (err) {
+        this.logger.warn(`[Redis] quit failed during shutdown: ${String(err)}`);
+      }
+    }
+    this.client.disconnect();
   }
 }
