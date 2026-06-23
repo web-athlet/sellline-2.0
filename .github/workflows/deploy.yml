@@ -34,7 +34,7 @@ jobs:
     outputs:
       sha: ${{ steps.meta.outputs.sha }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           # workflow_run checks out the default branch by default; pin to the SHA
           # that actually passed CI so we ship exactly what was tested.
@@ -77,7 +77,7 @@ jobs:
     timeout-minutes: 15
     environment: production # required-reviewer approval gate
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Configure kubectl
         run: |
           mkdir -p "$HOME/.kube"
