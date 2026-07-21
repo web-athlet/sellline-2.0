@@ -8,6 +8,6 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "vitest": "^3.2.6"
+    "vitest": "^3.2.7"
   }
 }
