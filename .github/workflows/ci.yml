@@ -22,7 +22,7 @@ jobs:
         with:
           version: 10.18.0
           run_install: false
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: pnpm
@@ -42,7 +42,7 @@ jobs:
         with:
           version: 10.18.0
           run_install: false
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: pnpm
@@ -64,7 +64,7 @@ jobs:
         with:
           version: 10.18.0
           run_install: false
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: pnpm
@@ -87,7 +87,7 @@ jobs:
         with:
           version: 10.18.0
           run_install: false
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: pnpm
@@ -108,7 +108,7 @@ jobs:
         with:
           version: 10.18.0
           run_install: false
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: pnpm
@@ -128,7 +128,7 @@ jobs:
       - uses: pnpm/action-setup@v6
         with:
           version: 10.18.0
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
       # Audit-Level: critical bis Next-15-Migration (Session 15).
